@@ -8,10 +8,10 @@ public class PokemonData : MonoBehaviour
     public Texture pokemonSprite;
     public AudioClip pokemonCry;
 
-    public PokemonData(Pokemon pokemon, Texture sprite)
+    public PokemonData(Pokemon pokemon, Texture sprite, AudioClip cry)
     {
         this.pokemon = pokemon;
         pokemonSprite = sprite;
-        //pokemonCry = cry;
+        pokemonCry = cry;
     }
 }

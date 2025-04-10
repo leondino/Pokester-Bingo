@@ -11,6 +11,9 @@ public class PokeAPIRequester : MonoBehaviour
     // The base URL for the PokeAPI
     private readonly string baseURL = "https://pokeapi.co/api/v2/pokemon/";
 
+    // URL for cries
+    private readonly string baseCryURL = "https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/";
+
     PokeApiClient pokeApiClient;
     private Texture pokemonSprite;
     private AudioClip pokemonCry;
@@ -19,7 +22,7 @@ public class PokeAPIRequester : MonoBehaviour
     void Start()
     {
         pokeApiClient = new PokeApiClient();
-        GetRandomPokemon(GEN1);
+        GetRandomPokemon(ALL_POKEMON);
     }
 
     // Update is called once per frame
@@ -56,24 +59,25 @@ public class PokeAPIRequester : MonoBehaviour
             }
         }
 
-        GameManager.instance.NextRound(new PokemonData(pokemon, pokemonSprite));
+        // Pokemon Cries not implemented in the Wrapper it seems... so we do it dirty
+         
+        UnityWebRequest pokeCryRequest = UnityWebRequestMultimedia.GetAudioClip(baseCryURL + pokemon.Id + ".ogg", AudioType.OGGVORBIS);
+        {
+            // Request and wait for the desired page.
+            yield return pokeCryRequest.SendWebRequest();
+            if (pokeCryRequest.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Error: " + pokeCryRequest.error);
+                yield break;
+            }
+            else
+            {
+                // Show results as text
+                pokemonCry = DownloadHandlerAudioClip.GetContent(pokeCryRequest);
+            }
+        }
 
-        // Pokemon Cries not implemented in the Wrapper it seems...
-        // 
-        //UnityWebRequest pokeCryRequest = UnityWebRequestMultimedia.GetAudioClip(pokemon.);
-        //{
-        //    // Request and wait for the desired page.
-        //    yield return pokeSpriteRequest.SendWebRequest();
-        //    if (pokeSpriteRequest.result != UnityWebRequest.Result.Success)
-        //    {
-        //        Debug.LogError("Error: " + pokeSpriteRequest.error);
-        //        yield break;
-        //    }
-        //    else
-        //    {
-        //        // Show results as text
-        //        pokemonSprite = DownloadHandlerTexture.GetContent(pokeSpriteRequest);
-        //    }
-        //}
+        GameManager.instance.NextRound(new PokemonData(pokemon, pokemonSprite, pokemonCry));
     }
+
 }
