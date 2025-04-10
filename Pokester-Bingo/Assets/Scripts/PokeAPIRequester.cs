@@ -12,6 +12,8 @@ public class PokeAPIRequester : MonoBehaviour
     private readonly string baseURL = "https://pokeapi.co/api/v2/pokemon/";
 
     PokeApiClient pokeApiClient;
+    private Texture pokemonSprite;
+    private AudioClip pokemonCry;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -32,28 +34,46 @@ public class PokeAPIRequester : MonoBehaviour
         string url = baseURL + "pokemon/" + randomID;
         //Debug.Log(url);
         Pokemon pokemon = await pokeApiClient.GetResourceAsync<Pokemon>(randomID);
-        Debug.Log(pokemon.Name + " #"+pokemon.Id);
-        //StartCoroutine(GetPokemonFromID(url));
+        //GameManager.instance.NextRound(pokemon);
+        StartCoroutine(GetSpriteAndCry(pokemon));
     }
 
-    IEnumerator GetPokemonFromID(string url)
+    IEnumerator GetSpriteAndCry(Pokemon pokemon)
     {
-        UnityWebRequest pokeRequest = UnityWebRequest.Get(url);
+        UnityWebRequest pokeSpriteRequest = UnityWebRequestTexture.GetTexture(pokemon.Sprites.FrontDefault);
         {
             // Request and wait for the desired page.
-            yield return pokeRequest.SendWebRequest();
-            if (pokeRequest.result != UnityWebRequest.Result.Success)
+            yield return pokeSpriteRequest.SendWebRequest();
+            if (pokeSpriteRequest.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError("Error: " + pokeRequest.error);
+                Debug.LogError("Error: " + pokeSpriteRequest.error);
                 yield break;
             }
             else
             {
                 // Show results as text
-                Debug.Log(pokeRequest.downloadHandler.text);
-                // Or retrieve results as binary data
-                // byte[] results = webRequest.downloadHandler.data;
+                pokemonSprite = DownloadHandlerTexture.GetContent(pokeSpriteRequest);
             }
         }
+
+        GameManager.instance.NextRound(new PokemonData(pokemon, pokemonSprite));
+
+        // Pokemon Cries not implemented in the Wrapper it seems...
+        // 
+        //UnityWebRequest pokeCryRequest = UnityWebRequestMultimedia.GetAudioClip(pokemon.);
+        //{
+        //    // Request and wait for the desired page.
+        //    yield return pokeSpriteRequest.SendWebRequest();
+        //    if (pokeSpriteRequest.result != UnityWebRequest.Result.Success)
+        //    {
+        //        Debug.LogError("Error: " + pokeSpriteRequest.error);
+        //        yield break;
+        //    }
+        //    else
+        //    {
+        //        // Show results as text
+        //        pokemonSprite = DownloadHandlerTexture.GetContent(pokeSpriteRequest);
+        //    }
+        //}
     }
 }
