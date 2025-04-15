@@ -9,7 +9,7 @@ public class PokeAPIRequester : MonoBehaviour
     const int ALL_POKEMON = 1025, GEN1 = 151;
 
     // The base URL for the PokeAPI
-    private readonly string baseURL = "https://pokeapi.co/api/v2/pokemon/";
+    //private readonly string baseURL = "https://pokeapi.co/api/v2/pokemon/";
 
     // URL for cries
     private readonly string baseCryURL = "https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/";
