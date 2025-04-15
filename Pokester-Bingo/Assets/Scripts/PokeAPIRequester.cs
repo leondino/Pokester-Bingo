@@ -22,7 +22,6 @@ public class PokeAPIRequester : MonoBehaviour
     void Start()
     {
         pokeApiClient = new PokeApiClient();
-        GetRandomPokemon(ALL_POKEMON);
     }
 
     // Update is called once per frame
@@ -34,10 +33,7 @@ public class PokeAPIRequester : MonoBehaviour
     public async void GetRandomPokemon(int maxPokemon)
     {
         int randomID = Random.Range(1, maxPokemon + 1);
-        string url = baseURL + "pokemon/" + randomID;
-        //Debug.Log(url);
         Pokemon pokemon = await pokeApiClient.GetResourceAsync<Pokemon>(randomID);
-        //GameManager.instance.NextRound(pokemon);
         StartCoroutine(GetSpriteAndCry(pokemon));
     }
 

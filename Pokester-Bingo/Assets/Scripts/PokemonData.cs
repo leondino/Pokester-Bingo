@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using PokeApiNet;
 
-public class PokemonData : MonoBehaviour
+public class PokemonData
 {
     public Pokemon pokemon;
     public Texture pokemonSprite;
