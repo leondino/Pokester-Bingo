@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
-using PokeApiNet;
 
 public class PokeAPIRequester : MonoBehaviour
 {
@@ -13,15 +12,15 @@ public class PokeAPIRequester : MonoBehaviour
 
     // URL for cries
     private readonly string baseCryURL = "https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/";
+    private readonly string baseSpriteURL = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/";
 
-    PokeApiClient pokeApiClient;
     private Texture pokemonSprite;
     private AudioClip pokemonCry;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        pokeApiClient = new PokeApiClient();
+        
     }
 
     // Update is called once per frame
@@ -33,13 +32,13 @@ public class PokeAPIRequester : MonoBehaviour
     public async void GetRandomPokemon(int maxPokemon)
     {
         int randomID = Random.Range(1, maxPokemon + 1);
-        Pokemon pokemon = await pokeApiClient.GetResourceAsync<Pokemon>(randomID);
-        StartCoroutine(GetSpriteAndCry(pokemon));
+        // TODO: add base api request for pokemon info
+        StartCoroutine(GetSpriteAndCry(randomID));
     }
 
-    IEnumerator GetSpriteAndCry(Pokemon pokemon)
+    IEnumerator GetSpriteAndCry(int pokemonID)
     {
-        UnityWebRequest pokeSpriteRequest = UnityWebRequestTexture.GetTexture(pokemon.Sprites.FrontDefault);
+        UnityWebRequest pokeSpriteRequest = UnityWebRequestTexture.GetTexture(baseSpriteURL + pokemonID + ".png");
         {
             // Request and wait for the desired page.
             yield return pokeSpriteRequest.SendWebRequest();
@@ -57,7 +56,7 @@ public class PokeAPIRequester : MonoBehaviour
 
         // Pokemon Cries not implemented in the Wrapper it seems... so we do it dirty
          
-        UnityWebRequest pokeCryRequest = UnityWebRequestMultimedia.GetAudioClip(baseCryURL + pokemon.Id + ".ogg", AudioType.OGGVORBIS);
+        UnityWebRequest pokeCryRequest = UnityWebRequestMultimedia.GetAudioClip(baseCryURL + pokemonID + ".ogg", AudioType.OGGVORBIS);
         {
             // Request and wait for the desired page.
             yield return pokeCryRequest.SendWebRequest();
@@ -73,7 +72,7 @@ public class PokeAPIRequester : MonoBehaviour
             }
         }
 
-        GameManager.instance.NextRound(new PokemonData(pokemon, pokemonSprite, pokemonCry));
+        GameManager.instance.NextRound(new PokemonData(pokemonID, pokemonSprite, pokemonCry));
     }
 
 }

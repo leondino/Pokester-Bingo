@@ -1,5 +1,4 @@
 using UnityEngine;
-using PokeApiNet;
 using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
@@ -9,7 +8,7 @@ public class GameManager : MonoBehaviour
 
     public static GameManager instance;
 
-    public Pokemon currentPokemon;
+    public PokemonData currentPokemon;
     public RawImage pokemonImage;
     private AudioSource pokemonCry;
     private PokeAPIRequester pokeAPI;
@@ -54,11 +53,11 @@ public class GameManager : MonoBehaviour
 
     public void NextRound(PokemonData nextPokemon)
     {
-        currentPokemon = nextPokemon.pokemon;
+        currentPokemon = nextPokemon;
         pokemonImage.texture = nextPokemon.pokemonSprite;
         pokemonImage.texture.filterMode = FilterMode.Point;
         pokemonCry.clip = nextPokemon.pokemonCry;
         pokemonCry.Play();
-        Debug.Log("Next round with " + currentPokemon.Name + " #" + currentPokemon.Id);
+        Debug.Log("Next round with " + currentPokemon.pokemonName + " #" + currentPokemon.pokemonID);
     }
 }

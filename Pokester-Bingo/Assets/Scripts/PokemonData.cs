@@ -1,16 +1,16 @@
 using UnityEngine;
 using UnityEngine.UI;
-using PokeApiNet;
 
 public class PokemonData
 {
-    public Pokemon pokemon;
+    public int pokemonID;
+    public string pokemonName = "unkown";
     public Texture pokemonSprite;
     public AudioClip pokemonCry;
 
-    public PokemonData(Pokemon pokemon, Texture sprite, AudioClip cry)
+    public PokemonData(int ID, Texture sprite, AudioClip cry)
     {
-        this.pokemon = pokemon;
+        pokemonID = ID;
         pokemonSprite = sprite;
         pokemonCry = cry;
     }
