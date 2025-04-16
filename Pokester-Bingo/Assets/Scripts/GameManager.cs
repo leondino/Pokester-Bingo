@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
 
     public PokemonData currentPokemon;
     public RawImage pokemonImage;
+    public RawImage pokemonType1Image, pokemonType2Image;
     private AudioSource pokemonCry;
     private PokeAPIRequester pokeAPI;
 
@@ -21,9 +22,9 @@ public class GameManager : MonoBehaviour
         if (instance == null)
             instance = this;
 
-        pokemonImage.texture = Texture2D.blackTexture;
         pokemonCry = pokemonImage.GetComponent<AudioSource>();
         pokeAPI = GetComponent<PokeAPIRequester>();
+        ResetPokemon();
     }
 
     // Update is called once per frame
@@ -46,6 +47,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void ResetPokemon()
+    {
+        currentPokemon = null;
+        pokemonImage.texture = Texture2D.blackTexture;
+        pokemonType1Image.texture = Texture2D.blackTexture;
+        pokemonType2Image.texture = Texture2D.blackTexture;
+        pokemonCry.clip = null; 
+    }
+
     public void LoadNextPokemon()
     {
         pokeAPI.GetRandomPokemon(maxPokemon);
@@ -53,11 +63,32 @@ public class GameManager : MonoBehaviour
 
     public void NextRound(PokemonData nextPokemon)
     {
+        ResetPokemon();
         currentPokemon = nextPokemon;
+
+        //fill images
         pokemonImage.texture = nextPokemon.pokemonSprite;
         pokemonImage.texture.filterMode = FilterMode.Point;
+        pokemonType1Image.texture = nextPokemon.pokemonTypeSprites[0];
+        pokemonType1Image.texture.filterMode = FilterMode.Point;
+        pokemonType1Image.SetNativeSize();
+        if (nextPokemon.pokemonTypes.Length > 1)
+        {
+            pokemonType2Image.texture = nextPokemon.pokemonTypeSprites[1];
+            pokemonType2Image.texture.filterMode = FilterMode.Point;
+            pokemonType2Image.SetNativeSize();
+        }
+
         pokemonCry.clip = nextPokemon.pokemonCry;
         pokemonCry.Play();
         Debug.Log("Next round with " + currentPokemon.pokemonName + " #" + currentPokemon.pokemonID);
+        if (currentPokemon.pokemonTypes.Length > 1)
+        {
+            Debug.Log("Types: " + currentPokemon.pokemonTypes[0] + "/" + currentPokemon.pokemonTypes[1]);
+        }
+        else
+        {
+            Debug.Log("Type: " + currentPokemon.pokemonTypes[0]);
+        }
     }
 }

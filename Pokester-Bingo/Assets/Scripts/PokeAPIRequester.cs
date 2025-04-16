@@ -1,14 +1,14 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
+using SimpleJSON;
+using NUnit.Framework;
+using System.Collections.Generic;
 
 public class PokeAPIRequester : MonoBehaviour
 {
-    // Number of Pokemon in the game OR in gen1  only.
-    const int ALL_POKEMON = 1025, GEN1 = 151;
-
     // The base URL for the PokeAPI
-    //private readonly string baseURL = "https://pokeapi.co/api/v2/pokemon/";
+    private readonly string baseURL = "https://pokeapi.co/api/v2/";
 
     // URL for cries
     private readonly string baseCryURL = "https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/";
@@ -16,6 +16,9 @@ public class PokeAPIRequester : MonoBehaviour
 
     private Texture pokemonSprite;
     private AudioClip pokemonCry;
+    private string pokemonName;
+    private string[] pokemonTypes;
+    private List<Texture> pokemonTypeSprites = new List<Texture>();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -29,15 +32,39 @@ public class PokeAPIRequester : MonoBehaviour
 
     }
 
-    public async void GetRandomPokemon(int maxPokemon)
+    public void GetRandomPokemon(int maxPokemon)
     {
         int randomID = Random.Range(1, maxPokemon + 1);
-        // TODO: add base api request for pokemon info
-        StartCoroutine(GetSpriteAndCry(randomID));
+        StartCoroutine(GetPokemonData(randomID));
     }
 
-    IEnumerator GetSpriteAndCry(int pokemonID)
+    IEnumerator GetPokemonData(int pokemonID)
     {
+        // Get the pokemon data as JSON string
+        UnityWebRequest pokeRequest = UnityWebRequest.Get(baseURL + "pokemon/" + pokemonID);
+        {
+            // Request and wait for the desired page.
+            yield return pokeRequest.SendWebRequest();
+            if (pokeRequest.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Error: " + pokeRequest.error);
+                yield break;
+            }
+
+            JSONNode pokeInfo = JSON.Parse(pokeRequest.downloadHandler.text);
+            // Get the pokemon name and type
+            pokemonName = pokeInfo["species"]["name"];
+
+            JSONNode pokeTypes = pokeInfo["types"];
+            pokemonTypes = new string[pokeTypes.Count];
+
+            for (int i = 0, j = pokeTypes.Count - 1; i < pokeTypes.Count; i++, j--)
+            {
+                pokemonTypes[j] = pokeTypes[i]["type"]["name"];
+            }
+        }
+
+        // Get the pokemon sprite as .png
         UnityWebRequest pokeSpriteRequest = UnityWebRequestTexture.GetTexture(baseSpriteURL + pokemonID + ".png");
         {
             // Request and wait for the desired page.
@@ -49,13 +76,12 @@ public class PokeAPIRequester : MonoBehaviour
             }
             else
             {
-                // Show results as text
+                // Set result as texture
                 pokemonSprite = DownloadHandlerTexture.GetContent(pokeSpriteRequest);
             }
         }
 
-        // Pokemon Cries not implemented in the Wrapper it seems... so we do it dirty
-         
+        // Get the pokemon cry as .ogg
         UnityWebRequest pokeCryRequest = UnityWebRequestMultimedia.GetAudioClip(baseCryURL + pokemonID + ".ogg", AudioType.OGGVORBIS);
         {
             // Request and wait for the desired page.
@@ -67,12 +93,51 @@ public class PokeAPIRequester : MonoBehaviour
             }
             else
             {
-                // Show results as text
+                // Set result as audio clip
                 pokemonCry = DownloadHandlerAudioClip.GetContent(pokeCryRequest);
             }
         }
 
-        GameManager.instance.NextRound(new PokemonData(pokemonID, pokemonSprite, pokemonCry));
+        //TODO: Make requests to get the image of the pokemon types
+
+        foreach (string type in pokemonTypes)
+        {
+            // Get the type data as JSON string
+            UnityWebRequest typeRequest = UnityWebRequest.Get(baseURL + "type/" + type);
+            {
+                // Request and wait for the desired page.
+                yield return typeRequest.SendWebRequest();
+                if (typeRequest.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.LogError("Error: " + typeRequest.error);
+                    yield break;
+                }
+
+                JSONNode typeInfo = JSON.Parse(typeRequest.downloadHandler.text);
+                // Get the url of the type sprite
+                string typeSpriteUrl = typeInfo["sprites"]["generation-ix"]["scarlet-violet"]["name_icon"];
+
+                // Get the type sprite as .png
+                UnityWebRequest typeSpriteRequest = UnityWebRequestTexture.GetTexture(typeSpriteUrl);
+                {
+                    // Request and wait for the desired page.
+                    yield return typeSpriteRequest.SendWebRequest();
+                    if (typeSpriteRequest.result != UnityWebRequest.Result.Success)
+                    {
+                        Debug.LogError("Error: " + typeSpriteRequest.error);
+                        yield break;
+                    }
+                    else
+                    {
+                        // Add result as texture to the list
+                        pokemonTypeSprites.Add(DownloadHandlerTexture.GetContent(typeSpriteRequest));
+                    }
+                }
+            }
+        }
+
+        GameManager.instance.NextRound(new PokemonData(pokemonID, pokemonName, pokemonTypes, pokemonSprite, pokemonCry, pokemonTypeSprites));
+        pokemonTypeSprites.Clear();
     }
 
 }
