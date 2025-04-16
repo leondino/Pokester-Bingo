@@ -744,7 +744,8 @@ GameObject:
   m_Component:
   - component: {fileID: 633431500}
   - component: {fileID: 633431499}
-  - component: {fileID: 633431501}
+  - component: {fileID: 633431502}
+  - component: {fileID: 633431503}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -767,8 +768,8 @@ MonoBehaviour:
   NetworkManagerExpanded: 0
   NetworkConfig:
     ProtocolVersion: 0
-    NetworkTransport: {fileID: 633431501}
-    PlayerPrefab: {fileID: 0}
+    NetworkTransport: {fileID: 633431503}
+    PlayerPrefab: {fileID: 1896157472984865667, guid: 8c6f353b0b7cb3d439c7325fb878b9e4, type: 3}
     Prefabs:
       NetworkPrefabsLists:
       - {fileID: 11400000, guid: 488078b5960e1394f823b52607343209, type: 2}
@@ -810,7 +811,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &633431501
+--- !u!114 &633431502
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -819,11 +820,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 633431498}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6960e84d07fb87f47956e7a81d71c4e6, type: 3}
+  m_Script: {fileID: 11500000, guid: 6e96dfbf1250e1640ae0516eee45cc38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &633431503
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 633431498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 637a7c36dc874286a7ac74b1aeabc1ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_ProtocolType: 0
-  m_UseWebSockets: 0
+  m_UseWebSockets: 1
   m_UseEncryption: 0
   m_MaxPacketQueueSize: 128
   m_MaxPayloadSize: 6144
