@@ -82,7 +82,7 @@ public class PokeAPIRequester : MonoBehaviour
         }
 
         // Get the pokemon cry as .ogg
-        UnityWebRequest pokeCryRequest = UnityWebRequestMultimedia.GetAudioClip(baseCryURL + pokemonID + ".ogg", AudioType.OGGVORBIS);
+        UnityWebRequest pokeCryRequest = UnityWebRequestMultimedia.GetAudioClip(baseCryURL + pokemonID + ".ogg", AudioType.AUDIOQUEUE);
         {
             // Request and wait for the desired page.
             yield return pokeCryRequest.SendWebRequest();
