@@ -58,9 +58,9 @@ public class PokeAPIRequester : MonoBehaviour
             JSONNode pokeTypes = pokeInfo["types"];
             pokemonTypes = new string[pokeTypes.Count];
 
-            for (int i = 0, j = pokeTypes.Count - 1; i < pokeTypes.Count; i++, j--)
+            for (int i = 0; i < pokeTypes.Count; i++)
             {
-                pokemonTypes[j] = pokeTypes[i]["type"]["name"];
+                pokemonTypes[i] = pokeTypes[i]["type"]["name"];
             }
         }
 
