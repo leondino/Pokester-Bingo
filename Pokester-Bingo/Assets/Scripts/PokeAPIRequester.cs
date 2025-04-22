@@ -32,10 +32,9 @@ public class PokeAPIRequester : MonoBehaviour
 
     }
 
-    public void GetRandomPokemon(int maxPokemon)
+    public void GetRandomPokemon(int pokemonID)
     {
-        int randomID = Random.Range(1, maxPokemon + 1);
-        StartCoroutine(GetPokemonData(randomID));
+        StartCoroutine(GetPokemonData(pokemonID));
     }
 
     IEnumerator GetPokemonData(int pokemonID)

@@ -1015,7 +1015,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1347318237}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: LoadNextPokemon
+        m_MethodName: RandomizePokemonRpc
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1564,6 +1564,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1347318236}
   - component: {fileID: 1347318235}
+  - component: {fileID: 1347318238}
   - component: {fileID: 1347318237}
   m_Layer: 0
   m_Name: GameManager
@@ -1611,9 +1612,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f486fc5758e75b04698142816991a49f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
   pokemonImage: {fileID: 1156684887}
   pokemonType1Image: {fileID: 1134215989}
   pokemonType2Image: {fileID: 1101752981}
+--- !u!114 &1347318238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1347318234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 3812935101
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  DeferredDespawnTick: 0
+  Ownership: 1
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 0
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
+  SyncOwnerTransformWhenParented: 1
+  AllowOwnerToParent: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

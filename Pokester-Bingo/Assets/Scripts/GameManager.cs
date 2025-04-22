@@ -1,12 +1,13 @@
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
     // Number of Pokemon in the game OR in gen1  only.
     const int ALL_POKEMON = 1025, GEN1 = 151;
 
-    public static GameManager instance;
+    public static GameManager instance { get; private set; }
 
     public PokemonData currentPokemon;
     public RawImage pokemonImage;
@@ -15,6 +16,8 @@ public class GameManager : MonoBehaviour
     private PokeAPIRequester pokeAPI;
 
     private int maxPokemon = ALL_POKEMON;
+    private bool isRandomized = false;
+    //private int randomPokemonID;
 
     // Create singleton of this object in awake.
     void Awake()
@@ -56,15 +59,28 @@ public class GameManager : MonoBehaviour
         pokemonCry.clip = null; 
     }
 
-    public void LoadNextPokemon()
+    [Rpc(SendTo.Authority)]
+    public void RandomizePokemonRpc()
     {
-        pokeAPI.GetRandomPokemon(maxPokemon);
+        if (!isRandomized)
+        {
+            int randomPokemonID = Random.Range(1, maxPokemon + 1);
+            isRandomized = true;
+            LoadNextPokemonRpc(randomPokemonID);
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void LoadNextPokemonRpc(int randomID)
+    {
+        pokeAPI.GetRandomPokemon(randomID);
     }
 
     public void NextRound(PokemonData nextPokemon)
     {
         ResetPokemon();
         currentPokemon = nextPokemon;
+        isRandomized = false;
 
         //fill images
         pokemonImage.texture = nextPokemon.pokemonSprite;
