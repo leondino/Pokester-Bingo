@@ -1,4 +1,10 @@
+using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
+using Unity.Services.Authentication;
+using Unity.Services.Lobbies;
+using Unity.Services.Lobbies.Models;
+using Unity.Services.Multiplayer;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,9 +21,13 @@ public class GameManager : NetworkBehaviour
     private AudioSource pokemonCry;
     private PokeAPIRequester pokeAPI;
 
+    // List of player object spawn location
+    public Transform playerSpawnLocationParent;
+    //[HideInInspector]
+    public List<Transform> playerObjects;
+
     private int maxPokemon = ALL_POKEMON;
     private bool isRandomized = false;
-    //private int randomPokemonID;
 
     // Create singleton of this object in awake.
     void Awake()
@@ -25,15 +35,49 @@ public class GameManager : NetworkBehaviour
         if (instance == null)
             instance = this;
 
+        playerObjects = playerSpawnLocationParent.Cast<Transform>().ToList();
+
         pokemonCry = pokemonImage.GetComponent<AudioSource>();
         pokeAPI = GetComponent<PokeAPIRequester>();
         ResetPokemon();
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void SpawnPlayerRpc(int playerId, string playerName)
+    {
+        Debug.Log("HI IM BEING RUN, SPAWN PLAYER: " + playerName);
+        playerObjects[playerId].gameObject.SetActive(true);
+        playerObjects[playerId].GetComponent<PlayerObjectController>().UpdatePlayerStats(playerName);
+    }
+
+    [Rpc(SendTo.Authority)]
+    private void RefreshPlayersRpc(int playerId, string playerName)
+    {
+        Debug.Log("RefreshPlayers called with clientId: " + playerId);
+        for (int iPlayer = 0; iPlayer < NetworkManager.ConnectedClientsIds.Count; iPlayer++)
+        {
+            if (playerId == iPlayer + 1)
+            {
+                SpawnPlayerRpc(iPlayer, playerName);
+            }
+            else
+            {
+                SpawnPlayerRpc(iPlayer, playerObjects[iPlayer].GetComponent<PlayerObjectController>().playerNameText.text);
+            }
+        }
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        RefreshPlayersRpc((int)NetworkManager.LocalClientId, AuthenticationService.Instance.Profile);
     }
 
     // FOR IMPLEMENTING DETAILED GEN SELECTION LATER*
@@ -56,7 +100,7 @@ public class GameManager : NetworkBehaviour
         pokemonImage.texture = Texture2D.blackTexture;
         pokemonType1Image.texture = Texture2D.blackTexture;
         pokemonType2Image.texture = Texture2D.blackTexture;
-        pokemonCry.clip = null; 
+        pokemonCry.clip = null;
     }
 
     [Rpc(SendTo.Authority)]
