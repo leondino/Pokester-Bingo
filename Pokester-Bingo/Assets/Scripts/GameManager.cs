@@ -130,7 +130,7 @@ public class GameManager : NetworkBehaviour
         pokemonImage.texture = nextPokemon.pokemonSprite;
         pokemonImage.texture.filterMode = FilterMode.Point;
         pokemonType1Image.texture = nextPokemon.pokemonTypeSprites[0];
-        pokemonType1Image.texture.filterMode = FilterMode.Point;
+        pokemonType1Image.texture.filterMode = FilterMode.Trilinear;
         pokemonType1Image.SetNativeSize();
         if (nextPokemon.pokemonTypes.Length > 1)
         {

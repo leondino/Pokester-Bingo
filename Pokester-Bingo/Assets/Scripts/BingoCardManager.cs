@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -47,7 +48,7 @@ public class BingoCardManager : MonoBehaviour
     {
         for (int i = 0; i < bingoSquares.Count; i++)
         {
-            BingoColors randomColor = (BingoColors)Random.Range(0, System.Enum.GetValues(typeof(BingoColors)).Length);
+            BingoColors randomColor = (BingoColors)UnityEngine.Random.Range(0, System.Enum.GetValues(typeof(BingoColors)).Length);
             colorArray.Add(randomColor);
             completionArray.Add(false);
             SetBingoSquareColor(i, randomColor);
@@ -59,11 +60,33 @@ public class BingoCardManager : MonoBehaviour
         for (int i = 0; i < bingoSquares.Count; i++)
         {
             SetBingoSquareColor(i, colorArray[i]);
-            // Iets met if (completionArray[i]){}
+            if (completionArray[i])
+            {
+                Color fullColor = bingoSquares[i].GetComponent<RawImage>().color;
+                fullColor.a = 1;
+                bingoSquares[i].GetComponent<RawImage>().color = fullColor;
+            }
         }
     }
 
-    public void SetBingoSquareColor(int index, BingoColors color)
+    public void SetBingoSquareCompletion(int index)
+    {
+        if (index < 0 || index >= bingoSquares.Count)
+        {
+            Debug.LogError("Index out of range");
+            return;
+        }
+        if (!completionArray[index] /*&&(colorArray[index] == currentRoundColor)*/)
+        {
+            completionArray[index] = true;
+            Color fullColor = bingoSquares[index].GetComponent<RawImage>().color;
+            fullColor.a = 1;
+            bingoSquares[index].GetComponent<RawImage>().color = fullColor;
+        }
+        else Debug.Log("Square already completed");
+    }
+
+    private void SetBingoSquareColor(int index, BingoColors color)
     {
         if (index < 0 || index >= bingoSquares.Count)
         {
@@ -75,19 +98,19 @@ public class BingoCardManager : MonoBehaviour
         switch (color)
         {
             case BingoColors.Red:
-                newColor = new Color(1, 0.145f, 0.145f);
+                newColor = new Color(1, 0.145f, 0.145f, 0.5f);
                 break;
             case BingoColors.Green:
-                newColor = new Color(0.275f, 0.839f, 0.149f);
+                newColor = new Color(0.275f, 0.839f, 0.149f, 0.5f);
                 break;
             case BingoColors.Blue:
-                newColor = new Color(0.275f, 0.702f, 1);
+                newColor = new Color(0.275f, 0.702f, 1, 0.5f);
                 break;
             case BingoColors.Orange:
-                newColor = new Color(0.925f, 0.584f, 0.165f);
+                newColor = new Color(0.925f, 0.584f, 0.165f, 0.5f);
                 break;
             case BingoColors.Pink:
-                newColor = new Color(0.967f, 0.427f, 1);
+                newColor = new Color(0.967f, 0.427f, 1, 0.5f);
                 break;
         }
         bingoSquares[index].GetComponent<RawImage>().color = newColor;
