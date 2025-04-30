@@ -135,8 +135,8 @@ public class GameManager : NetworkBehaviour
         if (nextPokemon.pokemonTypes.Length > 1)
         {
             pokemonType2Image.texture = nextPokemon.pokemonTypeSprites[1];
-            pokemonType2Image.texture.filterMode = FilterMode.Point;
             pokemonType2Image.SetNativeSize();
+            pokemonType2Image.texture.filterMode = FilterMode.Trilinear;
         }
 
         pokemonCry.clip = nextPokemon.pokemonCry;
