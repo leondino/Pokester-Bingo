@@ -2,6 +2,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
@@ -10,6 +11,8 @@ public class BingoCardManager : MonoBehaviour
 {
     [SerializeField]
     private bool myBingoCard = false; // Set this to true for the local player
+
+    public int bingoCardID;
 
     public enum BingoColors
     {
@@ -35,7 +38,16 @@ public class BingoCardManager : MonoBehaviour
         // Initialize the bingo card with random colors
         CreateBingoCard();
         if (!myBingoCard)
-            UpdateBingoCard();
+        {
+            GameManager.instance.allBingoCards.Add(this);
+            GameManager.instance.UpdatePlayersBingoCardsRpc();
+        }
+    }
+
+    private void Start()
+    {
+        if (myBingoCard)
+            GameManager.instance.myBingoCard = this;
     }
 
     // Update is called once per frame

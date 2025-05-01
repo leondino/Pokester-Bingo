@@ -2390,6 +2390,8 @@ MonoBehaviour:
   pokemonImage: {fileID: 1156684887}
   pokemonType1Image: {fileID: 1134215989}
   pokemonType2Image: {fileID: 1101752981}
+  myBingoCard: {fileID: 2134056596}
+  allBingoCards: []
   playerSpawnLocationParent: {fileID: 391508116}
   playerObjects: []
 --- !u!114 &1347318238
@@ -2634,6 +2636,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7593509916316240037, guid: b0860bb946b327a42ac3ba52371093a1, type: 3}
   m_PrefabInstance: {fileID: 2466914906936689563}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2134056596 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5445767900317841814, guid: b0860bb946b327a42ac3ba52371093a1, type: 3}
+  m_PrefabInstance: {fileID: 2466914906936689563}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2d796bd56e369448867c60cadb478fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &2466914906936689563
 PrefabInstance:
   m_ObjectHideFlags: 0

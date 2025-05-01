@@ -20,6 +20,8 @@ public class GameManager : NetworkBehaviour
     public RawImage pokemonType1Image, pokemonType2Image;
     private AudioSource pokemonCry;
     private PokeAPIRequester pokeAPI;
+    public BingoCardManager myBingoCard;
+    public List<BingoCardManager> allBingoCards = new List<BingoCardManager>();
 
     // List of player object spawn location
     public Transform playerSpawnLocationParent;
@@ -55,6 +57,8 @@ public class GameManager : NetworkBehaviour
         Debug.Log("HI IM BEING RUN, SPAWN PLAYER: " + playerName);
         playerObjects[playerId].gameObject.SetActive(true);
         playerObjects[playerId].GetComponent<PlayerObjectController>().UpdatePlayerStats(playerName);
+        allBingoCards[playerId].bingoCardID = playerId;
+        myBingoCard.bingoCardID = (int)(NetworkManager.LocalClientId - 1);
     }
 
     [Rpc(SendTo.Authority)]
@@ -78,6 +82,12 @@ public class GameManager : NetworkBehaviour
     {
         base.OnNetworkSpawn();
         RefreshPlayersRpc((int)NetworkManager.LocalClientId, AuthenticationService.Instance.Profile);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void UpdatePlayersBingoCardsRpc()
+    {
+        Debug.Log("UpdatePlayersBingoCardsRpc called" + NetworkManager.LocalClientId);
     }
 
     // FOR IMPLEMENTING DETAILED GEN SELECTION LATER*
