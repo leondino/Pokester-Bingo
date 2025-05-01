@@ -148,7 +148,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   myBingoCard: 1
+  bingoCardID: 999
   bingoSquareParent: {fileID: 3172162191282677920}
+  colorArray: 
+  completionArray: 
 --- !u!1 &8116765281010941701
 GameObject:
   m_ObjectHideFlags: 0

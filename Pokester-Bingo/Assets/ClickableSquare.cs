@@ -15,7 +15,7 @@ public class ClickableSquare : MonoBehaviour, IPointerDownHandler
     public void OnPointerDown(PointerEventData eventData) 
     {
         Debug.Log("Square clicked: " + squareIndex);
-        if (bingoCardManager != null)
+        if (bingoCardManager != null && bingoCardManager.myBingoCard)
         {
             bingoCardManager.SetBingoSquareCompletion(squareIndex);
         }

@@ -9,10 +9,11 @@ using UnityEngine.UI;
 
 public class BingoCardManager : MonoBehaviour
 {
-    [SerializeField]
-    private bool myBingoCard = false; // Set this to true for the local player
+    public bool myBingoCard = false; // Set this to true for the local player
 
-    public int bingoCardID;
+    public int bingoCardID = 999;
+
+    private bool fullyInitialized = false;
 
     public enum BingoColors
     {
@@ -26,8 +27,8 @@ public class BingoCardManager : MonoBehaviour
     [SerializeField]
     private Transform bingoSquareParent;
     private List<Transform> bingoSquares = new List<Transform>();
-    private List<BingoColors> colorArray = new List<BingoColors>();
-    private List<bool> completionArray = new List<bool>();
+    public List<BingoColors> colorArray = new List<BingoColors>();
+    public List<bool> completionArray = new List<bool>();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -40,7 +41,6 @@ public class BingoCardManager : MonoBehaviour
         if (!myBingoCard)
         {
             GameManager.instance.allBingoCards.Add(this);
-            GameManager.instance.UpdatePlayersBingoCardsRpc();
         }
     }
 
@@ -51,9 +51,9 @@ public class BingoCardManager : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        
+
     }
 
     private void CreateBingoCard()
@@ -67,8 +67,11 @@ public class BingoCardManager : MonoBehaviour
         }
     }
 
-    public void UpdateBingoCard()
+    public void UpdateBingoCard(BingoColors[] colorArray, bool[] completionArray)
     {
+        this.colorArray = colorArray.ToList();
+        this.completionArray = completionArray.ToList();
+
         for (int i = 0; i < bingoSquares.Count; i++)
         {
             SetBingoSquareColor(i, colorArray[i]);

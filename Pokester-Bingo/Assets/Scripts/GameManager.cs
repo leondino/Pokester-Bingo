@@ -7,6 +7,7 @@ using Unity.Services.Lobbies.Models;
 using Unity.Services.Multiplayer;
 using UnityEngine;
 using UnityEngine.UI;
+using static BingoCardManager;
 
 public class GameManager : NetworkBehaviour
 {
@@ -58,7 +59,11 @@ public class GameManager : NetworkBehaviour
         playerObjects[playerId].gameObject.SetActive(true);
         playerObjects[playerId].GetComponent<PlayerObjectController>().UpdatePlayerStats(playerName);
         allBingoCards[playerId].bingoCardID = playerId;
-        myBingoCard.bingoCardID = (int)(NetworkManager.LocalClientId - 1);
+        if (playerId == (int)NetworkManager.LocalClientId - 1)
+        {
+            myBingoCard.bingoCardID = playerId;
+            UpdatePlayersBingoCardsRpc(myBingoCard.bingoCardID, myBingoCard.colorArray.ToArray(), myBingoCard.completionArray.ToArray());
+        }
     }
 
     [Rpc(SendTo.Authority)]
@@ -85,9 +90,10 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    public void UpdatePlayersBingoCardsRpc()
+    public void UpdatePlayersBingoCardsRpc(int cardID, BingoColors[] colorArray, bool[] completionArray)
     {
-        Debug.Log("UpdatePlayersBingoCardsRpc called" + NetworkManager.LocalClientId);
+        Debug.Log("Update bingo card: " + cardID);
+        allBingoCards[cardID].UpdateBingoCard(colorArray, completionArray);
     }
 
     // FOR IMPLEMENTING DETAILED GEN SELECTION LATER*

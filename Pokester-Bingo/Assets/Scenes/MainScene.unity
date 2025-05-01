@@ -209,7 +209,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &94608566
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2658,6 +2658,10 @@ PrefabInstance:
     - target: {fileID: 5042868166929034795, guid: b0860bb946b327a42ac3ba52371093a1, type: 3}
       propertyPath: m_Name
       value: BingoCard
+      objectReference: {fileID: 0}
+    - target: {fileID: 5445767900317841814, guid: b0860bb946b327a42ac3ba52371093a1, type: 3}
+      propertyPath: myBingoCard
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7593509916316240037, guid: b0860bb946b327a42ac3ba52371093a1, type: 3}
       propertyPath: m_Pivot.x
