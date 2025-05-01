@@ -16,6 +16,8 @@ public class GameManager : NetworkBehaviour
 
     public static GameManager instance { get; private set; }
 
+    [SerializeField]
+    private GameObject pokemonScreen;
     public PokemonData currentPokemon;
     public RawImage pokemonImage;
     public RawImage pokemonType1Image, pokemonType2Image;
@@ -133,6 +135,9 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     public void LoadNextPokemonRpc(int randomID)
     {
+        //tempory remove later on
+        pokemonScreen.SetActive(true);
+
         pokeAPI.GetRandomPokemon(randomID);
     }
 

@@ -2387,6 +2387,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  pokemonScreen: {fileID: 94608565}
   pokemonImage: {fileID: 1156684887}
   pokemonType1Image: {fileID: 1134215989}
   pokemonType2Image: {fileID: 1101752981}
