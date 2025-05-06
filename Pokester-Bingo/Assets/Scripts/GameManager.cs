@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using TMPro;
 using Unity.Netcode;
 using Unity.Services.Authentication;
 using Unity.Services.Lobbies;
@@ -21,6 +23,10 @@ public class GameManager : NetworkBehaviour
     [SerializeField]
     private GameObject pokemonScreen;
     public PokemonData currentPokemon;
+    [SerializeField]
+    private TMP_InputField answerInput;
+    [SerializeField]
+    private TMP_Text countDownText;
     public BingoColors currentRoundColor; // Set this to the color of the current round
     public RawImage pokemonImage;
     public Image pokemonImageBackground;
@@ -39,6 +45,10 @@ public class GameManager : NetworkBehaviour
     private bool isRandomized = false;
     public bool HasBingoClick { get; set; } = false;
 
+    public int countDownTime = 20; // Set this to the desired countdown time in seconds
+    private float countDownTimer;
+    private bool runCountDown = false;
+
     // Create singleton of this object in awake.
     void Awake()
     {
@@ -49,14 +59,27 @@ public class GameManager : NetworkBehaviour
 
         pokemonCry = pokemonImage.GetComponent<AudioSource>();
         pokeAPI = GetComponent<PokeAPIRequester>();
-        ResetPokemon();
+        ResetRound();
 
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        if (countDownTimer > 0 && runCountDown)
+        {
+            countDownTimer -= Time.deltaTime;
+            countDownText.text = Mathf.CeilToInt(countDownTimer).ToString();
+        }
+        else if (countDownTimer <= 0)
+        {
+            runCountDown = false;
+            countDownTimer = countDownTime;
+            countDownText.text = "0";
+            // Add logic here for what happens when the timer runs out
+            // For example, you might want to call a method to end the round
+            CheckCorrectAnswer();
+        }
     }
 
     [Rpc(SendTo.Everyone)]
@@ -117,6 +140,35 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    private void CheckCorrectAnswer()
+    {
+        string givenAnser = answerInput.text.ToLower();
+        string correctAnswer = currentPokemon.pokemonName.ToLower();
+        answerInput.text = currentPokemon.pokemonName; // Set the correct name in the inpt field to show the player
+        if (givenAnser == correctAnswer)
+        {
+            // Correct answer logic
+            Debug.Log("Correct answer!");
+            HasBingoClick = true;
+            //myBingoCard.CheckForBingo(currentPokemon.pokemonTypes);
+            StartCoroutine(EndRound());
+        }
+        else
+        {
+            // Incorrect answer logic
+            Debug.Log("Incorrect answer. Try again!");
+        }
+    }
+
+    private IEnumerator EndRound()
+    {
+        yield return new WaitForSeconds(2f);
+        // Logic to end the round
+        // For example, you might want to call a method to reset the game or load a new round
+        myBingoCard.gameObject.SetActive(true);
+        pokemonScreen.SetActive(false);
+    }
+
     private void ResetPokemon()
     {
         currentPokemon = null;
@@ -141,7 +193,6 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     public void LoadNextPokemonRpc(int randomID, BingoColors roundColor)
     {
-        //tempory remove later on
         myBingoCard.gameObject.SetActive(false);
         pokemonScreen.SetActive(true);
 
@@ -153,6 +204,9 @@ public class GameManager : NetworkBehaviour
     private void ResetRound()
     {
         ResetPokemon();
+        countDownTimer = countDownTime; // Reset countdown time
+        countDownText.text = countDownTime.ToString();
+        answerInput.text = null; // Clear the input field
         isRandomized = false;
         HasBingoClick = false;
     }
@@ -161,6 +215,8 @@ public class GameManager : NetworkBehaviour
     {
         ResetRound();
         currentPokemon = nextPokemon;
+
+        runCountDown = true; // Start the countdown timer
 
         //fill images
 

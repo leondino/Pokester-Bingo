@@ -100,6 +100,7 @@ public class BingoCardManager : MonoBehaviour
         if (!completionArray[index] &&(colorArray[index] == GameManager.instance.currentRoundColor)
             && GameManager.instance.HasBingoClick)
         {
+            GameManager.instance.HasBingoClick = false;
             completionArray[index] = true;
             Color fullColor = bingoSquares[index].GetComponent<RawImage>().color;
             fullColor.a = 1;
