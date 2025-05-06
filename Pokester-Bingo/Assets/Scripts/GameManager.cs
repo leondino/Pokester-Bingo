@@ -19,6 +19,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField]
     private GameObject pokemonScreen;
     public PokemonData currentPokemon;
+    public BingoColors currentRoundColor; // Set this to the color of the current round
     public RawImage pokemonImage;
     public RawImage pokemonType1Image, pokemonType2Image;
     private AudioSource pokemonCry;
@@ -33,6 +34,7 @@ public class GameManager : NetworkBehaviour
 
     private int maxPokemon = ALL_POKEMON;
     private bool isRandomized = false;
+    public bool HasBingoClick { get; set; } = false;
 
     // Create singleton of this object in awake.
     void Awake()
@@ -127,25 +129,35 @@ public class GameManager : NetworkBehaviour
         if (!isRandomized)
         {
             int randomPokemonID = Random.Range(1, maxPokemon + 1);
+            BingoColors randomColor = (BingoColors)Random.Range(0, System.Enum.GetValues(typeof(BingoColors)).Length);
             isRandomized = true;
-            LoadNextPokemonRpc(randomPokemonID);
+            LoadNextPokemonRpc(randomPokemonID, randomColor);
         }
     }
 
     [Rpc(SendTo.Everyone)]
-    public void LoadNextPokemonRpc(int randomID)
+    public void LoadNextPokemonRpc(int randomID, BingoColors roundColor)
     {
         //tempory remove later on
+        myBingoCard.gameObject.SetActive(false);
         pokemonScreen.SetActive(true);
+
+        currentRoundColor = roundColor;
 
         pokeAPI.GetRandomPokemon(randomID);
     }
 
-    public void NextRound(PokemonData nextPokemon)
+    private void ResetRound()
     {
         ResetPokemon();
-        currentPokemon = nextPokemon;
         isRandomized = false;
+        HasBingoClick = false;
+    }
+
+    public void NextRound(PokemonData nextPokemon)
+    {
+        ResetRound();
+        currentPokemon = nextPokemon;
 
         //fill images
         pokemonImage.texture = nextPokemon.pokemonSprite;

@@ -91,7 +91,8 @@ public class BingoCardManager : MonoBehaviour
             Debug.LogError("Index out of range");
             return;
         }
-        if (!completionArray[index] /*&&(colorArray[index] == currentRoundColor)*/)
+        if (!completionArray[index] &&(colorArray[index] == GameManager.instance.currentRoundColor)
+            && GameManager.instance.HasBingoClick)
         {
             completionArray[index] = true;
             Color fullColor = bingoSquares[index].GetComponent<RawImage>().color;
