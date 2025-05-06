@@ -15,6 +15,12 @@ public class BingoCardManager : MonoBehaviour
 
     private bool fullyInitialized = false;
 
+    public static Color Red = new Color(1, 0.145f, 0.145f, 0.5f);
+    public static Color Green = new Color(0.275f, 0.839f, 0.149f, 0.5f);
+    public static Color Blue = new Color(0.275f, 0.702f, 1, 0.5f);
+    public static Color Orange = new Color(0.925f, 0.584f, 0.165f, 0.5f);
+    public static Color Pink = new Color(0.967f, 0.427f, 1, 0.5f);
+
     public enum BingoColors
     {
         Red,
@@ -114,19 +120,19 @@ public class BingoCardManager : MonoBehaviour
         switch (color)
         {
             case BingoColors.Red:
-                newColor = new Color(1, 0.145f, 0.145f, 0.5f);
+                newColor = Red;
                 break;
             case BingoColors.Green:
-                newColor = new Color(0.275f, 0.839f, 0.149f, 0.5f);
+                newColor = Green;
                 break;
             case BingoColors.Blue:
-                newColor = new Color(0.275f, 0.702f, 1, 0.5f);
+                newColor = Blue;
                 break;
             case BingoColors.Orange:
-                newColor = new Color(0.925f, 0.584f, 0.165f, 0.5f);
+                newColor = Orange;
                 break;
             case BingoColors.Pink:
-                newColor = new Color(0.967f, 0.427f, 1, 0.5f);
+                newColor = Pink;
                 break;
         }
         bingoSquares[index].GetComponent<RawImage>().color = newColor;

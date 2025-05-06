@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using Unity.Netcode;
 using Unity.Services.Authentication;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Multiplayer;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using static BingoCardManager;
@@ -21,6 +23,7 @@ public class GameManager : NetworkBehaviour
     public PokemonData currentPokemon;
     public BingoColors currentRoundColor; // Set this to the color of the current round
     public RawImage pokemonImage;
+    public Image pokemonImageBackground;
     public RawImage pokemonType1Image, pokemonType2Image;
     private AudioSource pokemonCry;
     private PokeAPIRequester pokeAPI;
@@ -160,6 +163,31 @@ public class GameManager : NetworkBehaviour
         currentPokemon = nextPokemon;
 
         //fill images
+
+        // Fill Background color image for round color
+        switch (currentRoundColor)
+        {
+            case BingoColors.Red:
+                pokemonImageBackground.color = Red;
+                break;
+            case BingoColors.Green:
+                pokemonImageBackground.color = Green;
+                break;
+            case BingoColors.Blue:
+                pokemonImageBackground.color = Blue;
+                break;
+            case BingoColors.Orange:
+                pokemonImageBackground.color = Orange;
+                break;
+            case BingoColors.Pink:
+                pokemonImageBackground.color = Pink;
+                break;
+        }
+        UnityEngine.Color roundColor = pokemonImageBackground.color;
+        roundColor.a = 1; // Set alpha to 0.5 for transparency
+        pokemonImageBackground.color = roundColor;
+
+        // Fill Pokemon image and type images
         pokemonImage.texture = nextPokemon.pokemonSprite;
         pokemonImage.texture.filterMode = FilterMode.Point;
         pokemonType1Image.texture = nextPokemon.pokemonTypeSprites[0];
@@ -172,8 +200,11 @@ public class GameManager : NetworkBehaviour
             pokemonType2Image.texture.filterMode = FilterMode.Trilinear;
         }
 
+        // Play Pokemon cry
         pokemonCry.clip = nextPokemon.pokemonCry;
         pokemonCry.Play();
+
+        // Fill Pokemon name and ID in a log
         Debug.Log("Next round with " + currentPokemon.pokemonName + " #" + currentPokemon.pokemonID);
         if (currentPokemon.pokemonTypes.Length > 1)
         {
