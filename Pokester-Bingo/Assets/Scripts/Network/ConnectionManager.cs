@@ -42,6 +42,7 @@ public class ConnectionManager : MonoBehaviour
     {
         if (m_NetworkManager.LocalClientId == clientId)
         {
+            _state = ConnectionState.Connected;
             Debug.Log($"Client-{clientId} is connected and can spawn {nameof(NetworkObject)}s.");
         }
     }
@@ -49,7 +50,9 @@ public class ConnectionManager : MonoBehaviour
     private void OnGUI()
     {
         if (_state == ConnectionState.Connected)
+        {
             return;
+        }
 
         GUI.enabled = _state != ConnectionState.Connecting;
 
