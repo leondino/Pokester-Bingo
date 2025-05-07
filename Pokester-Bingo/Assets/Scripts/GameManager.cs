@@ -63,6 +63,8 @@ public class GameManager : NetworkBehaviour
     {
         if (instance == null)
             instance = this;
+        // Makes sure the timer keeps running when alt tabbing
+        Application.runInBackground = true;
 
         playerObjects = playerSpawnLocationParent.Cast<Transform>().ToList();
         playersReady = new bool[playerObjects.Count];
