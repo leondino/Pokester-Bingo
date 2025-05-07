@@ -41,6 +41,8 @@ public class GameManager : NetworkBehaviour
     public Transform playerSpawnLocationParent;
     //[HideInInspector]
     public List<Transform> playerObjects;
+    [SerializeField]
+    private bool[] playersReady;
 
     private int maxPokemon = ALL_POKEMON;
     private bool isRandomized = false;
@@ -61,11 +63,11 @@ public class GameManager : NetworkBehaviour
             instance = this;
 
         playerObjects = playerSpawnLocationParent.Cast<Transform>().ToList();
+        playersReady = new bool[playerObjects.Count];
 
         pokemonCry = pokemonImage.GetComponent<AudioSource>();
         pokeAPI = GetComponent<PokeAPIRequester>();
         ResetRound();
-
     }
 
     // Update is called once per frame
@@ -84,6 +86,26 @@ public class GameManager : NetworkBehaviour
             // Add logic here for what happens when the timer runs out
             // For example, you might want to call a method to end the round
             CheckCorrectAnswer();
+        }
+
+        // Go to next round when all players are ready and you have authority
+        if (HasAuthority && myBingoCard.gameObject.activeSelf)
+        {
+            int playersReadyCount = 0;
+            for (int iReady = 0; iReady < playersReady.Length; iReady++)
+            {
+                if (playersReady[iReady])
+                    playersReadyCount++;
+            }
+            if (playersReadyCount == NetworkManager.ConnectedClientsIds.Count)
+            {
+                for (int iReady = 0; iReady < playersReady.Length; iReady++)
+                {
+                    playersReady[iReady] = false;
+                }
+                Debug.Log("readycheck readycheck");
+                RandomizePokemonRpc();
+            }
         }
     }
 
@@ -176,6 +198,17 @@ public class GameManager : NetworkBehaviour
         // For example, you might want to call a method to reset the game or load a new round
         myBingoCard.gameObject.SetActive(true);
         pokemonScreen.SetActive(false);
+    }
+
+    public void OnReadyButton()
+    {
+        SentReadyStatusRpc(myBingoCard.bingoCardID);
+    }
+
+    [Rpc(SendTo.Authority)]
+    public void SentReadyStatusRpc(int playerID)
+    {
+        playersReady[playerID] = true;
     }
 
     private void ResetPokemon()

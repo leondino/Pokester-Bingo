@@ -1895,7 +1895,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1347318237}
         m_TargetAssemblyTypeName: GameManager, Assembly-CSharp
-        m_MethodName: RandomizePokemonRpc
+        m_MethodName: OnReadyButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2747,7 +2747,9 @@ MonoBehaviour:
   allBingoCards: []
   playerSpawnLocationParent: {fileID: 391508116}
   playerObjects: []
+  playersReady: 
   countDownTime: 20
+  pokeNameAnswerDiff: 2
 --- !u!114 &1347318238
 MonoBehaviour:
   m_ObjectHideFlags: 0
