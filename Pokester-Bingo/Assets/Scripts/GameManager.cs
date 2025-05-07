@@ -23,6 +23,8 @@ public class GameManager : NetworkBehaviour
 
     [SerializeField]
     private GameObject pokemonScreen;
+    [SerializeField]
+    private Button readyButton;
     public PokemonData currentPokemon;
     [SerializeField]
     private TMP_InputField answerInput;
@@ -104,6 +106,8 @@ public class GameManager : NetworkBehaviour
                     playersReady[iReady] = false;
                 }
                 Debug.Log("readycheck readycheck");
+                SyncAllBingoCardsRpc();
+                //TODO: Check if someone has bingo after this (maybe do this in coroutine with second in between)
                 RandomizePokemonRpc();
             }
         }
@@ -144,6 +148,7 @@ public class GameManager : NetworkBehaviour
     {
         base.OnNetworkSpawn();
         RefreshPlayersRpc((int)NetworkManager.LocalClientId, AuthenticationService.Instance.Profile);
+        readyButton.interactable = true;
     }
 
     [Rpc(SendTo.Everyone)]
@@ -151,6 +156,12 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log("Update bingo card: " + cardID);
         allBingoCards[cardID].UpdateBingoCard(colorArray, completionArray);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void SyncAllBingoCardsRpc()
+    {
+        UpdatePlayersBingoCardsRpc(myBingoCard.bingoCardID, myBingoCard.colorArray.ToArray(), myBingoCard.completionArray.ToArray());
     }
 
     // FOR IMPLEMENTING DETAILED GEN SELECTION LATER*
@@ -197,6 +208,7 @@ public class GameManager : NetworkBehaviour
         // Logic to end the round
         // For example, you might want to call a method to reset the game or load a new round
         myBingoCard.gameObject.SetActive(true);
+        readyButton.gameObject.SetActive(true);
         pokemonScreen.SetActive(false);
     }
 
@@ -246,6 +258,8 @@ public class GameManager : NetworkBehaviour
         countDownTimer = countDownTime; // Reset countdown time
         countDownText.text = countDownTime.ToString();
         answerInput.text = null; // Clear the input field
+        readyButton.enabled = false; // Deselect button
+        readyButton.enabled = true;
         isRandomized = false;
         HasBingoClick = false;
     }
@@ -254,6 +268,7 @@ public class GameManager : NetworkBehaviour
     {
         ResetRound();
         myBingoCard.gameObject.SetActive(false);
+        readyButton.gameObject.SetActive(false);
         pokemonScreen.SetActive(true);
         currentPokemon = nextPokemon;
 
