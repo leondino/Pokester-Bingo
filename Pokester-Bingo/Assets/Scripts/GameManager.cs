@@ -11,6 +11,7 @@ using Unity.Services.Multiplayer;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using Algorithms;
 using static BingoCardManager;
 
 public class GameManager : NetworkBehaviour
@@ -45,9 +46,13 @@ public class GameManager : NetworkBehaviour
     private bool isRandomized = false;
     public bool HasBingoClick { get; set; } = false;
 
-    public int countDownTime = 20; // Set this to the desired countdown time in seconds
+    [Header("Game round options")]
+    [SerializeField]
+    private int countDownTime = 20; // Set this to the desired countdown time in seconds
     private float countDownTimer;
     private bool runCountDown = false;
+    [SerializeField]
+    private int pokeNameAnswerDiff = 2; // Set this to the desired Levenshtein distance for correct answer
 
     // Create singleton of this object in awake.
     void Awake()
@@ -145,19 +150,23 @@ public class GameManager : NetworkBehaviour
         string givenAnser = answerInput.text.ToLower();
         string correctAnswer = currentPokemon.pokemonName.ToLower();
         answerInput.text = currentPokemon.pokemonName; // Set the correct name in the inpt field to show the player
-        if (givenAnser == correctAnswer)
+
+        // Check if the given answer matches the correct answer with Levenshtein distance
+        int answerDifference = LevenshteinDistance.Calculate(givenAnser, correctAnswer);
+        Debug.Log("Answer difference: " + answerDifference);
+
+        if (answerDifference <= pokeNameAnswerDiff)
         {
             // Correct answer logic
             Debug.Log("Correct answer!");
             HasBingoClick = true;
-            //myBingoCard.CheckForBingo(currentPokemon.pokemonTypes);
-            StartCoroutine(EndRound());
         }
         else
         {
             // Incorrect answer logic
             Debug.Log("Incorrect answer. Try again!");
         }
+        StartCoroutine(EndRound());
     }
 
     private IEnumerator EndRound()
@@ -193,9 +202,6 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     public void LoadNextPokemonRpc(int randomID, BingoColors roundColor)
     {
-        myBingoCard.gameObject.SetActive(false);
-        pokemonScreen.SetActive(true);
-
         currentRoundColor = roundColor;
 
         pokeAPI.GetRandomPokemon(randomID);
@@ -214,6 +220,8 @@ public class GameManager : NetworkBehaviour
     public void NextRound(PokemonData nextPokemon)
     {
         ResetRound();
+        myBingoCard.gameObject.SetActive(false);
+        pokemonScreen.SetActive(true);
         currentPokemon = nextPokemon;
 
         runCountDown = true; // Start the countdown timer
