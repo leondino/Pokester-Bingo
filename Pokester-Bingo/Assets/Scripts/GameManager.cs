@@ -30,6 +30,8 @@ public class GameManager : NetworkBehaviour
     private TMP_InputField answerInput;
     [SerializeField]
     private TMP_Text countDownText;
+    [SerializeField]
+    private RoundCelebration roundCelebration;
     public BingoColors currentRoundColor; // Set this to the color of the current round
     public RawImage pokemonImage;
     public Image pokemonImageBackground;
@@ -180,6 +182,9 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    /// <summary>
+    /// Check if the given answer matches the correct answer and plays correct celebration.
+    /// </summary>
     private void CheckCorrectAnswer()
     {
         string givenAnser = answerInput.text.ToLower();
@@ -194,11 +199,13 @@ public class GameManager : NetworkBehaviour
         {
             // Correct answer logic
             Debug.Log("Correct answer!");
+            roundCelebration.CorrectCelebration();
             HasBingoClick = true;
         }
         else
         {
             // Incorrect answer logic
+            roundCelebration.WrongCelebration();
             Debug.Log("Incorrect answer. Try again!");
         }
         StartCoroutine(EndRound());
