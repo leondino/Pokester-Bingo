@@ -59,6 +59,8 @@ public class GameManager : NetworkBehaviour
     private bool runCountDown = false;
     [SerializeField]
     private int pokeNameAnswerDiff = 2; // Set this to the desired Levenshtein distance for correct answer
+    [SerializeField]
+    private float endRoundDuration = 3f; // Set this to the desired duration for the end round celebration
 
     // Create singleton of this object in awake.
     void Awake()
@@ -200,12 +202,14 @@ public class GameManager : NetworkBehaviour
             // Correct answer logic
             Debug.Log("Correct answer!");
             roundCelebration.CorrectCelebration();
+            answerInput.image.color = Green; // Change caret color to green
             HasBingoClick = true;
         }
         else
         {
             // Incorrect answer logic
             roundCelebration.WrongCelebration();
+            answerInput.image.color = Red; // Change caret color to red
             Debug.Log("Incorrect answer. Try again!");
         }
         StartCoroutine(EndRound());
@@ -213,7 +217,7 @@ public class GameManager : NetworkBehaviour
 
     private IEnumerator EndRound()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(endRoundDuration);
         // Logic to end the round
         // For example, you might want to call a method to reset the game or load a new round
         myBingoCard.gameObject.SetActive(true);
@@ -267,6 +271,7 @@ public class GameManager : NetworkBehaviour
         countDownTimer = countDownTime; // Reset countdown time
         countDownText.text = countDownTime.ToString();
         answerInput.text = null; // Clear the input field
+        answerInput.image.color = UnityEngine.Color.white; // Reset caret color to white
         readyButton.enabled = false; // Deselect button
         readyButton.enabled = true;
         isRandomized = false;

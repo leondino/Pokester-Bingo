@@ -13,8 +13,6 @@ public class BingoCardManager : MonoBehaviour
 
     public int bingoCardID = 999;
 
-    private bool fullyInitialized = false;
-
     public static Color Red = new Color(1, 0.145f, 0.145f, 0.5f);
     public static Color Green = new Color(0.275f, 0.839f, 0.149f, 0.5f);
     public static Color Blue = new Color(0.275f, 0.702f, 1, 0.5f);
