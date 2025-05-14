@@ -32,6 +32,8 @@ public class GameManager : NetworkBehaviour
     private TMP_Text countDownText;
     [SerializeField]
     private RoundCelebration roundCelebration;
+    [SerializeField]
+    private GameObject roundColorIndicator;
     public BingoColors currentRoundColor; // Set this to the color of the current round
     public RawImage pokemonImage;
     public Image pokemonImageBackground;
@@ -223,6 +225,40 @@ public class GameManager : NetworkBehaviour
         myBingoCard.gameObject.SetActive(true);
         readyButton.gameObject.SetActive(true);
         pokemonScreen.SetActive(false);
+
+        if (HasBingoClick)
+        {
+            SetColorIndicator(currentRoundColor); // Set the color indicator to the current round color
+            roundColorIndicator.SetActive(true);
+        }
+    }
+
+    private void SetColorIndicator(BingoColors color)
+    {
+        UnityEngine.Color newColor = UnityEngine.Color.white;
+
+        switch (color)
+        {
+            case BingoColors.Red:
+                newColor = Red;
+                break;
+            case BingoColors.Green:
+                newColor = Green;
+                break;
+            case BingoColors.Blue:
+                newColor = Blue;
+                break;
+            case BingoColors.Orange:
+                newColor = Orange;
+                break;
+            case BingoColors.Pink:
+                newColor = Pink;
+                break;
+        }
+        newColor.a = 1; // Set alpha to 1 for full opacity
+
+        Transform squareFilling = roundColorIndicator.transform.GetChild(1);
+        squareFilling.GetComponent<RawImage>().color = newColor;
     }
 
     public void OnReadyButton()
@@ -283,6 +319,7 @@ public class GameManager : NetworkBehaviour
         ResetRound();
         myBingoCard.gameObject.SetActive(false);
         readyButton.gameObject.SetActive(false);
+        roundColorIndicator.SetActive(false);
         pokemonScreen.SetActive(true);
         currentPokemon = nextPokemon;
 
