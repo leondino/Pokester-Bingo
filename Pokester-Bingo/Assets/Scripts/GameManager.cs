@@ -417,6 +417,10 @@ public class GameManager : NetworkBehaviour
                 if (TestWinnerLine(bingoLine, bingoCard))
                 {
                     winnerScreen.SetupWinningScreen(bingoLine, bingoCard);
+                    if (bingoCard.bingoCardID == myBingoCard.bingoCardID)
+                        roundCelebration.CorrectCelebration();
+                    else
+                        roundCelebration.WrongCelebration();
                 }
             }
         }

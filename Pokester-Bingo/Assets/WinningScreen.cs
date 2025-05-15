@@ -22,8 +22,6 @@ public class WinningScreen : MonoBehaviour
         // Set the correct line
         correctLine.SetAsLastSibling();
         Vector2 linePosition = winnerCardData.bingoSquares[bingoLine.centerSquareIndex].position;
-        linePosition.x += 32;
-        linePosition.y -= 32;
         correctLine.position = linePosition;
         correctLine.Rotate(0, 0, bingoLine.rotation);
     }
