@@ -34,6 +34,9 @@ public class GameManager : NetworkBehaviour
     private RoundCelebration roundCelebration;
     [SerializeField]
     private GameObject roundColorIndicator;
+    [SerializeField]
+    private Transform winnerScreen;
+    private GameObject winnerBingoCard;
     public BingoColors currentRoundColor; // Set this to the color of the current round
     public RawImage pokemonImage;
     public Image pokemonImageBackground;
@@ -42,6 +45,7 @@ public class GameManager : NetworkBehaviour
     private PokeAPIRequester pokeAPI;
     public BingoCardManager myBingoCard;
     public List<BingoCardManager> allBingoCards = new List<BingoCardManager>();
+    public bool GameHasWinner { get; set; }
 
     // List of player object spawn location
     public Transform playerSpawnLocationParent;
@@ -58,6 +62,7 @@ public class GameManager : NetworkBehaviour
     {
         public List<int> sqauresInLine;
         public int centerSquareIndex;
+        public int rotation;
     }
 
     private List<BingoLine> bingoLines;
@@ -94,53 +99,63 @@ public class GameManager : NetworkBehaviour
             new BingoLine
             {
                 sqauresInLine = new List<int> { 0, 1, 2, 3, 4 },
-                centerSquareIndex = 2
+                centerSquareIndex = 2,
+                rotation = 0,
             },
             new BingoLine
             {
                 sqauresInLine = new List<int> { 5, 6, 7, 8, 9 },
-                centerSquareIndex = 7
+                centerSquareIndex = 7,
+                rotation = 0,
             },
             new BingoLine
             {
                 sqauresInLine = new List<int> { 10, 11, 12, 13, 14 },
-                centerSquareIndex = 12
+                centerSquareIndex = 12,
+                rotation = 0,
             },
             new BingoLine
             {
                 sqauresInLine = new List<int> { 15, 16, 17, 18, 19 },
-                centerSquareIndex = 17
+                centerSquareIndex = 17,
+                rotation = 0,
             },
             new BingoLine
             {
                 sqauresInLine = new List<int> { 20, 21, 22, 23, 24 },
-                centerSquareIndex = 22
+                centerSquareIndex = 22,
+                rotation = 0,
             },
             // Vertical lines
             new BingoLine
             {
                 sqauresInLine = new List<int> { 0, 5, 10, 15, 20 },
-                centerSquareIndex = 10
+                centerSquareIndex = 10,
+                rotation = 90,
             },
             new BingoLine
             {
                 sqauresInLine = new List<int> { 1, 6, 11, 16, 21 },
-                centerSquareIndex = 11
+                centerSquareIndex = 11,
+                rotation = 90,
             },
             new BingoLine
             {
                 sqauresInLine = new List<int> { 2, 7, 12, 17, 22 },
-                centerSquareIndex = 12
+                centerSquareIndex = 12,
+                rotation = 90,
             },
             new BingoLine
             {
                 sqauresInLine = new List<int> { 3, 8, 13, 18, 23 },
-                centerSquareIndex = 13
+                centerSquareIndex = 13,
+                rotation = 90,
             },
             new BingoLine
             {
                 sqauresInLine = new List<int> { 4, 9, 14, 19, 24 },
-                centerSquareIndex = 14
+                centerSquareIndex = 14,
+                rotation = 90,
             },
         };
     }
@@ -182,7 +197,8 @@ public class GameManager : NetworkBehaviour
                 SyncAllBingoCardsRpc();
                 //TODO: Check if someone has bingo after this (maybe do this in coroutine with second in between)
                 CheckWinnerRpc();
-                RandomizePokemonRpc();
+                if(!GameHasWinner)
+                    RandomizePokemonRpc();
             }
         }
     }
@@ -378,6 +394,7 @@ public class GameManager : NetworkBehaviour
         readyButton.enabled = true;
         isRandomized = false;
         HasBingoClick = false;
+        GameHasWinner = false;
     }
     
     private bool TestWinnerLine(BingoLine bingoLine, BingoCardManager bingoCard)
@@ -400,11 +417,23 @@ public class GameManager : NetworkBehaviour
             {
                 if (TestWinnerLine(bingoLine, bingoCard))
                 {
-                    string winnerName = playerObjects[bingoCard.bingoCardID].GetComponent<PlayerObjectController>().playerNameText.text;
-                    Debug.Log(winnerName + " has Bingo!");
+                    SetupWinScreen(bingoLine, bingoCard);
                 }
             }
         }
+    }
+
+    private void SetupWinScreen(BingoLine bingoLine, BingoCardManager bingoCard)
+    {
+        GameHasWinner = true;
+        string winnerName = playerObjects[bingoCard.bingoCardID].GetComponent<PlayerObjectController>().playerNameText.text;
+        Debug.Log(winnerName + " has Bingo!");
+
+        // Set up the winner screen UI
+        winnerScreen.gameObject.SetActive(true);
+        winnerBingoCard = Instantiate(bingoCard.gameObject, winnerScreen);
+        winnerBingoCard.transform.position = myBingoCard.transform.position;
+        winnerBingoCard.transform.localScale = myBingoCard.transform.localScale;
     }
 
     public void NextRound(PokemonData nextPokemon)

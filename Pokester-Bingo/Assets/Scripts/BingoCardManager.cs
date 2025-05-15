@@ -41,10 +41,14 @@ public class BingoCardManager : MonoBehaviour
         bingoSquares.Remove(bingoSquareParent); // Remove the parent object from the list
 
         // Initialize the bingo card with random colors
-        CreateBingoCard();
-        if (!myBingoCard)
+        if (!GameManager.instance.GameHasWinner)
         {
-            GameManager.instance.allBingoCards.Add(this);
+            CreateBingoCard();
+            if (!myBingoCard)
+            {
+                GameManager.instance.allBingoCards.Add(this);
+            }
+
         }
     }
 
