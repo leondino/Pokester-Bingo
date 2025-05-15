@@ -54,6 +54,14 @@ public class GameManager : NetworkBehaviour
     private bool isRandomized = false;
     public bool HasBingoClick { get; set; } = false;
 
+    public struct BingoLine
+    {
+        public List<int> sqauresInLine;
+        public int centerSquareIndex;
+    }
+
+    private List<BingoLine> bingoLines;
+
     [Header("Game round options")]
     [SerializeField]
     private int countDownTime = 20; // Set this to the desired countdown time in seconds
@@ -78,6 +86,63 @@ public class GameManager : NetworkBehaviour
         pokemonCry = pokemonImage.GetComponent<AudioSource>();
         pokeAPI = GetComponent<PokeAPIRequester>();
         ResetRound();
+
+        // Initialize the bingo lines
+        bingoLines = new List<BingoLine>
+        {
+            // Horizontal lines
+            new BingoLine
+            {
+                sqauresInLine = new List<int> { 0, 1, 2, 3, 4 },
+                centerSquareIndex = 2
+            },
+            new BingoLine
+            {
+                sqauresInLine = new List<int> { 5, 6, 7, 8, 9 },
+                centerSquareIndex = 7
+            },
+            new BingoLine
+            {
+                sqauresInLine = new List<int> { 10, 11, 12, 13, 14 },
+                centerSquareIndex = 12
+            },
+            new BingoLine
+            {
+                sqauresInLine = new List<int> { 15, 16, 17, 18, 19 },
+                centerSquareIndex = 17
+            },
+            new BingoLine
+            {
+                sqauresInLine = new List<int> { 20, 21, 22, 23, 24 },
+                centerSquareIndex = 22
+            },
+            // Vertical lines
+            new BingoLine
+            {
+                sqauresInLine = new List<int> { 0, 5, 10, 15, 20 },
+                centerSquareIndex = 10
+            },
+            new BingoLine
+            {
+                sqauresInLine = new List<int> { 1, 6, 11, 16, 21 },
+                centerSquareIndex = 11
+            },
+            new BingoLine
+            {
+                sqauresInLine = new List<int> { 2, 7, 12, 17, 22 },
+                centerSquareIndex = 12
+            },
+            new BingoLine
+            {
+                sqauresInLine = new List<int> { 3, 8, 13, 18, 23 },
+                centerSquareIndex = 13
+            },
+            new BingoLine
+            {
+                sqauresInLine = new List<int> { 4, 9, 14, 19, 24 },
+                centerSquareIndex = 14
+            },
+        };
     }
 
     // Update is called once per frame
@@ -116,6 +181,7 @@ public class GameManager : NetworkBehaviour
                 Debug.Log("readycheck readycheck");
                 SyncAllBingoCardsRpc();
                 //TODO: Check if someone has bingo after this (maybe do this in coroutine with second in between)
+                CheckWinnerRpc();
                 RandomizePokemonRpc();
             }
         }
@@ -312,6 +378,33 @@ public class GameManager : NetworkBehaviour
         readyButton.enabled = true;
         isRandomized = false;
         HasBingoClick = false;
+    }
+    
+    private bool TestWinnerLine(BingoLine bingoLine, BingoCardManager bingoCard)
+    {
+        return TestWinnerLine(bingoCard.completionArray[bingoLine.sqauresInLine[0]], bingoCard.completionArray[bingoLine.sqauresInLine[1]],
+            bingoCard.completionArray[bingoLine.sqauresInLine[2]], bingoCard.completionArray[bingoLine.sqauresInLine[3]],
+            bingoCard.completionArray[bingoLine.sqauresInLine[4]]);
+    }
+
+    private bool TestWinnerLine(bool square1, bool square2, bool square3, bool square4, bool square5)
+    {
+        return square1 && square2 && square3 && square4 && square5;
+    }
+
+    [Rpc(SendTo.Everyone)]
+    private void CheckWinnerRpc()
+    {
+        foreach (BingoCardManager bingoCard in allBingoCards) {
+            foreach (BingoLine bingoLine in bingoLines)
+            {
+                if (TestWinnerLine(bingoLine, bingoCard))
+                {
+                    string winnerName = playerObjects[bingoCard.bingoCardID].GetComponent<PlayerObjectController>().playerNameText.text;
+                    Debug.Log(winnerName + " has Bingo!");
+                }
+            }
+        }
     }
 
     public void NextRound(PokemonData nextPokemon)
