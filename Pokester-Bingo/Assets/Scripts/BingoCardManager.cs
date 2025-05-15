@@ -30,7 +30,8 @@ public class BingoCardManager : MonoBehaviour
 
     [SerializeField]
     private Transform bingoSquareParent;
-    private List<Transform> bingoSquares = new List<Transform>();
+    [HideInInspector]
+    public List<Transform> bingoSquares = new List<Transform>();
     public List<BingoColors> colorArray = new List<BingoColors>();
     public List<bool> completionArray = new List<bool>();
 

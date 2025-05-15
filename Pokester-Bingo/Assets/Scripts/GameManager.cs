@@ -35,8 +35,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField]
     private GameObject roundColorIndicator;
     [SerializeField]
-    private Transform winnerScreen;
-    private GameObject winnerBingoCard;
+    private WinningScreen winnerScreen;
     public BingoColors currentRoundColor; // Set this to the color of the current round
     public RawImage pokemonImage;
     public Image pokemonImageBackground;
@@ -417,23 +416,10 @@ public class GameManager : NetworkBehaviour
             {
                 if (TestWinnerLine(bingoLine, bingoCard))
                 {
-                    SetupWinScreen(bingoLine, bingoCard);
+                    winnerScreen.SetupWinningScreen(bingoLine, bingoCard);
                 }
             }
         }
-    }
-
-    private void SetupWinScreen(BingoLine bingoLine, BingoCardManager bingoCard)
-    {
-        GameHasWinner = true;
-        string winnerName = playerObjects[bingoCard.bingoCardID].GetComponent<PlayerObjectController>().playerNameText.text;
-        Debug.Log(winnerName + " has Bingo!");
-
-        // Set up the winner screen UI
-        winnerScreen.gameObject.SetActive(true);
-        winnerBingoCard = Instantiate(bingoCard.gameObject, winnerScreen);
-        winnerBingoCard.transform.position = myBingoCard.transform.position;
-        winnerBingoCard.transform.localScale = myBingoCard.transform.localScale;
     }
 
     public void NextRound(PokemonData nextPokemon)
