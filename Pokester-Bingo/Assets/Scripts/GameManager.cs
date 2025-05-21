@@ -36,6 +36,7 @@ public class GameManager : NetworkBehaviour
     private GameObject roundColorIndicator;
     [SerializeField]
     private WinningScreen winnerScreen;
+    private PlayerIDManager playerIDManager;
     public BingoColors currentRoundColor; // Set this to the color of the current round
     public RawImage pokemonImage;
     public Image pokemonImageBackground;
@@ -83,9 +84,7 @@ public class GameManager : NetworkBehaviour
             instance = this;
         // Makes sure the timer keeps running when alt tabbing
         Application.runInBackground = true;
-        //NetworkObject.SetOwnershipLock(false);
-        NetworkManager.OnClientDisconnectCallback += OnPlayerLeave;
-
+        playerIDManager = GetComponent<PlayerIDManager>();
         playerObjects = playerSpawnLocationParent.Cast<Transform>().ToList();
         playersReady = new bool[playerObjects.Count];
 
@@ -182,13 +181,13 @@ public class GameManager : NetworkBehaviour
         // Go to next round when all players are ready and you have authority
         if (IsSessionOwner && myBingoCard.gameObject.activeSelf)
         {
+
             int playersReadyCount = 0;
             for (int iReady = 0; iReady < playersReady.Length; iReady++)
             {
                 if (playersReady[iReady])
                     playersReadyCount++;
             }
-            Debug.Log((playersReadyCount == NetworkManager.ConnectedClientsIds.Count) +" "+ playersReadyCount + NetworkManager.ConnectedClientsIds.Count);
             if (playersReadyCount == NetworkManager.ConnectedClientsIds.Count)
             {
                 for (int iReady = 0; iReady < playersReady.Length; iReady++)
@@ -202,17 +201,39 @@ public class GameManager : NetworkBehaviour
                 if(!GameHasWinner)
                     RandomizePokemonRpc();
             }
+
+            // Check if a player disconnected
+            foreach (var playerID in playerIDManager.playerIDs)
+            {
+                bool found = false;
+                for (int iPlayer = 0; iPlayer < NetworkManager.ConnectedClientsIds.Count; iPlayer++)
+                {
+                    if (playerID.clientID == (int)NetworkManager.ConnectedClientsIds[iPlayer])
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    // Player has disconnected, handle the disconnection
+                    Debug.Log("Player disconnected: " + playerID.playerID);
+                    OnPlayerLeaveRpc(playerID.playerID);
+                    playerIDManager.ClearPlayerID(playerID);
+                    break;
+                }
+            }
         }
     }
 
     [Rpc(SendTo.Everyone)]
-    private void SpawnPlayerRpc(int playerId, string playerName)
+    private void SpawnPlayerRpc(int playerId, string playerName, int clientID)
     {
         Debug.Log("HI IM BEING RUN, SPAWN PLAYER: " + playerName);
         playerObjects[playerId].gameObject.SetActive(true);
         playerObjects[playerId].GetComponent<PlayerObjectController>().UpdatePlayerStats(playerName);
         allBingoCards[playerId].bingoCardID = playerId;
-        if (playerId == (int)NetworkManager.LocalClientId - 1)
+        if (clientID == (int)NetworkManager.LocalClientId)
         {
             myBingoCard.bingoCardID = playerId;
             UpdatePlayersBingoCardsRpc(myBingoCard.bingoCardID, myBingoCard.colorArray.ToArray(), myBingoCard.completionArray.ToArray());
@@ -220,18 +241,26 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Authority)]
-    private void RefreshPlayersRpc(int playerId, string playerName)
+    private void RefreshPlayersRpc(int clientID, string playerName)
     {
-        Debug.Log("RefreshPlayers called with clientId: " + playerId);
+        Debug.Log("RefreshPlayers called with clientId: " + clientID);
+        int newPlayerID = playerIDManager.GetPlayerID();
         for (int iPlayer = 0; iPlayer < NetworkManager.ConnectedClientsIds.Count; iPlayer++)
         {
-            if (playerId == iPlayer + 1)
+            if (newPlayerID == iPlayer)
             {
-                SpawnPlayerRpc(iPlayer, playerName);
+                playerIDManager.AddIdLink(clientID, iPlayer);
+                SpawnPlayerRpc(iPlayer, playerName, clientID);
             }
             else
             {
-                SpawnPlayerRpc(iPlayer, playerObjects[iPlayer].GetComponent<PlayerObjectController>().playerNameText.text);
+                int existingClientID = 0;
+                foreach (var idInfo in playerIDManager.playerIDs)
+                {
+                    if (idInfo.playerID == iPlayer)
+                        existingClientID = idInfo.clientID;
+                }
+                SpawnPlayerRpc(iPlayer, playerObjects[iPlayer].GetComponent<PlayerObjectController>().playerNameText.text, existingClientID);
             }
         }
     }
@@ -243,14 +272,18 @@ public class GameManager : NetworkBehaviour
         readyButton.interactable = true;
     }
 
-    private void OnPlayerLeave(ulong playerId)
+    [Rpc(SendTo.Everyone)]
+    private void OnPlayerLeaveRpc(int playerId)
     {
-        Debug.Log("Player disconnected: " + playerId);
         // Handle player disconnection logic here
         // For example, you might want to remove the player's bingo card or update the UI
         //int playerId = (int)playerID.ClientId - 1;
-        allBingoCards[(int)playerId].gameObject.SetActive(false);
-        playerObjects[(int)playerId].gameObject.SetActive(false);
+        for (int iCompletion = 0; iCompletion < allBingoCards[playerId].completionArray.Count; iCompletion++)
+        {
+            allBingoCards[playerId].completionArray[iCompletion] = false;
+        }
+        playerObjects[playerId].gameObject.SetActive(false);
+        playersReady[playerId] = false; // Reset the ready status for the disconnected player
     }
 
     [Rpc(SendTo.Everyone)]
