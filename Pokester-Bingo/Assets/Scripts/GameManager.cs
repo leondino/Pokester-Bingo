@@ -83,6 +83,8 @@ public class GameManager : NetworkBehaviour
             instance = this;
         // Makes sure the timer keeps running when alt tabbing
         Application.runInBackground = true;
+        //NetworkObject.SetOwnershipLock(false);
+        NetworkManager.OnClientDisconnectCallback += OnPlayerLeave;
 
         playerObjects = playerSpawnLocationParent.Cast<Transform>().ToList();
         playersReady = new bool[playerObjects.Count];
@@ -178,7 +180,7 @@ public class GameManager : NetworkBehaviour
         }
 
         // Go to next round when all players are ready and you have authority
-        if (HasAuthority && myBingoCard.gameObject.activeSelf)
+        if (IsSessionOwner && myBingoCard.gameObject.activeSelf)
         {
             int playersReadyCount = 0;
             for (int iReady = 0; iReady < playersReady.Length; iReady++)
@@ -186,6 +188,7 @@ public class GameManager : NetworkBehaviour
                 if (playersReady[iReady])
                     playersReadyCount++;
             }
+            Debug.Log((playersReadyCount == NetworkManager.ConnectedClientsIds.Count) +" "+ playersReadyCount + NetworkManager.ConnectedClientsIds.Count);
             if (playersReadyCount == NetworkManager.ConnectedClientsIds.Count)
             {
                 for (int iReady = 0; iReady < playersReady.Length; iReady++)
@@ -194,7 +197,7 @@ public class GameManager : NetworkBehaviour
                 }
                 Debug.Log("readycheck readycheck");
                 SyncAllBingoCardsRpc();
-                //TODO: Check if someone has bingo after this (maybe do this in coroutine with second in between)
+                //Check if someone has bingo after this (maybe do this in coroutine with second in between)
                 CheckWinnerRpc();
                 if(!GameHasWinner)
                     RandomizePokemonRpc();
@@ -238,6 +241,16 @@ public class GameManager : NetworkBehaviour
         base.OnNetworkSpawn();
         RefreshPlayersRpc((int)NetworkManager.LocalClientId, AuthenticationService.Instance.Profile);
         readyButton.interactable = true;
+    }
+
+    private void OnPlayerLeave(ulong playerId)
+    {
+        Debug.Log("Player disconnected: " + playerId);
+        // Handle player disconnection logic here
+        // For example, you might want to remove the player's bingo card or update the UI
+        //int playerId = (int)playerID.ClientId - 1;
+        allBingoCards[(int)playerId].gameObject.SetActive(false);
+        playerObjects[(int)playerId].gameObject.SetActive(false);
     }
 
     [Rpc(SendTo.Everyone)]
@@ -345,6 +358,7 @@ public class GameManager : NetworkBehaviour
     public void OnReadyButton()
     {
         SentReadyStatusRpc(myBingoCard.bingoCardID);
+        Debug.Log("authority: " + HasAuthority +", current owner: " + NetworkManager.CurrentSessionOwner +", player id count" + NetworkManager.ConnectedClientsIds.Count);
     }
 
     [Rpc(SendTo.Authority)]
