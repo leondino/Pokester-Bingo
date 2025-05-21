@@ -7948,6 +7948,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxPlayerIds: 8
+  playerIDs: []
 --- !u!1001 &1632604240
 PrefabInstance:
   m_ObjectHideFlags: 0

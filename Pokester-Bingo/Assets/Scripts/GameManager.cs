@@ -227,7 +227,7 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    private void SpawnPlayerRpc(int playerId, string playerName, int clientID)
+    private void SpawnPlayerRpc(int playerId, string playerName, int clientID, PlayerIDManagerData IDData)
     {
         Debug.Log("HI IM BEING RUN, SPAWN PLAYER: " + playerName);
         playerObjects[playerId].gameObject.SetActive(true);
@@ -237,6 +237,10 @@ public class GameManager : NetworkBehaviour
         {
             myBingoCard.bingoCardID = playerId;
             UpdatePlayersBingoCardsRpc(myBingoCard.bingoCardID, myBingoCard.colorArray.ToArray(), myBingoCard.completionArray.ToArray());
+
+            //Sync player ID data for all clients with custom serialized data
+
+            playerIDManager.UpdatePlayerIDData(IDData);
         }
     }
 
@@ -250,7 +254,8 @@ public class GameManager : NetworkBehaviour
             if (newPlayerID == iPlayer)
             {
                 playerIDManager.AddIdLink(clientID, iPlayer);
-                SpawnPlayerRpc(iPlayer, playerName, clientID);
+                var playerIDData = playerIDManager.CreatePlayerIDData();
+                SpawnPlayerRpc(iPlayer, playerName, clientID, playerIDData);
             }
             else
             {
@@ -260,7 +265,9 @@ public class GameManager : NetworkBehaviour
                     if (idInfo.playerID == iPlayer)
                         existingClientID = idInfo.clientID;
                 }
-                SpawnPlayerRpc(iPlayer, playerObjects[iPlayer].GetComponent<PlayerObjectController>().playerNameText.text, existingClientID);
+                var playerIDData = playerIDManager.CreatePlayerIDData();
+                SpawnPlayerRpc(iPlayer, playerObjects[iPlayer].GetComponent<PlayerObjectController>().playerNameText.text, 
+                    existingClientID, playerIDData);
             }
         }
     }
