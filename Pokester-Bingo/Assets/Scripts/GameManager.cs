@@ -284,7 +284,6 @@ public class GameManager : NetworkBehaviour
     {
         // Handle player disconnection logic here
         // For example, you might want to remove the player's bingo card or update the UI
-        //int playerId = (int)playerID.ClientId - 1;
         for (int iCompletion = 0; iCompletion < allBingoCards[playerId].completionArray.Count; iCompletion++)
         {
             allBingoCards[playerId].completionArray[iCompletion] = false;
@@ -448,6 +447,7 @@ public class GameManager : NetworkBehaviour
         isRandomized = false;
         HasBingoClick = false;
         GameHasWinner = false;
+        roundColorIndicator.SetActive(false);
     }
     
     private bool TestWinnerLine(BingoLine bingoLine, BingoCardManager bingoCard)
@@ -478,6 +478,19 @@ public class GameManager : NetworkBehaviour
                 }
             }
         }
+    }
+
+    public void NewGameReset()
+    {
+        // Reset the game state for a new game
+        winnerScreen.gameObject.SetActive(false);
+        ResetRound();
+        myBingoCard.ResetBingoCard();
+        UpdatePlayersBingoCardsRpc(myBingoCard.bingoCardID, myBingoCard.colorArray.ToArray(), myBingoCard.completionArray.ToArray());
+        //foreach (var bingoCard in allBingoCards)
+        //{
+        //    bingoCard.ResetBingoCard();
+        //}
     }
 
     public void NextRound(PokemonData nextPokemon)

@@ -59,12 +59,6 @@ public class BingoCardManager : MonoBehaviour
             GameManager.instance.myBingoCard = this;
     }
 
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-
-    }
-
     private void CreateBingoCard()
     {
         for (int i = 0; i < bingoSquares.Count; i++)
@@ -74,6 +68,13 @@ public class BingoCardManager : MonoBehaviour
             completionArray.Add(false);
             SetBingoSquareColor(i, randomColor);
         }
+    }
+
+    public void ResetBingoCard()
+    {
+        colorArray.Clear();
+        completionArray.Clear();
+        CreateBingoCard();
     }
 
     public void UpdateBingoCard(BingoColors[] colorArray, bool[] completionArray)
