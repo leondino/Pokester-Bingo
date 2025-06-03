@@ -397,6 +397,7 @@ public class GameManager : NetworkBehaviour
     public void OnReadyButton()
     {
         SentReadyStatusRpc(myBingoCard.bingoCardID);
+        HasBingoClick = false; // Reset the bingo click status to lock the selected square
         Debug.Log("authority: " + HasAuthority +", current owner: " + NetworkManager.CurrentSessionOwner +", player id count" + NetworkManager.ConnectedClientsIds.Count);
     }
 
@@ -447,6 +448,7 @@ public class GameManager : NetworkBehaviour
         isRandomized = false;
         HasBingoClick = false;
         GameHasWinner = false;
+        myBingoCard.selectedSquareIndex = 999; // Reset selected square index
         roundColorIndicator.SetActive(false);
     }
     

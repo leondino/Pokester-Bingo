@@ -1,10 +1,6 @@
-using NUnit.Framework;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 public class BingoCardManager : MonoBehaviour
@@ -34,6 +30,8 @@ public class BingoCardManager : MonoBehaviour
     public List<Transform> bingoSquares = new List<Transform>();
     public List<BingoColors> colorArray = new List<BingoColors>();
     public List<bool> completionArray = new List<bool>();
+    [HideInInspector]
+    public int selectedSquareIndex = 999;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -101,16 +99,35 @@ public class BingoCardManager : MonoBehaviour
             Debug.LogError("Index out of range");
             return;
         }
-        if (!completionArray[index] &&(colorArray[index] == GameManager.instance.currentRoundColor)
+        if ((!completionArray[index] || selectedSquareIndex == index) && (colorArray[index] == GameManager.instance.currentRoundColor)
             && GameManager.instance.HasBingoClick)
         {
-            GameManager.instance.HasBingoClick = false;
+            UnselectBingoSquare(selectedSquareIndex); // Unselect the previously selected square
+            if (selectedSquareIndex == index)
+            {
+                selectedSquareIndex = 999; // Reset if the same square is clicked again
+                return;
+            }
             completionArray[index] = true;
             Color fullColor = bingoSquares[index].GetComponent<RawImage>().color;
             fullColor.a = 1;
             bingoSquares[index].GetComponent<RawImage>().color = fullColor;
+            selectedSquareIndex = index;
         }
         else Debug.Log("Square already completed");
+    }
+
+    private void UnselectBingoSquare(int index)
+    {
+        if (index < 0 || index >= bingoSquares.Count)
+        {
+            Debug.Log("No previous selected bingo square found");
+            return;
+        }
+        completionArray[index] = false;
+        Color newColor = bingoSquares[index].GetComponent<RawImage>().color;
+        newColor.a = 0.5f; // Reset alpha to 0.5
+        bingoSquares[index].GetComponent<RawImage>().color = newColor;
     }
 
     private void SetBingoSquareColor(int index, BingoColors color)
