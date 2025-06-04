@@ -1,17 +1,12 @@
+using Algorithms;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using TMPro;
 using Unity.Netcode;
 using Unity.Services.Authentication;
-using Unity.Services.Lobbies;
-using Unity.Services.Lobbies.Models;
-using Unity.Services.Multiplayer;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
-using Algorithms;
 using static BingoCardManager;
 
 public class GameManager : NetworkBehaviour
@@ -28,6 +23,10 @@ public class GameManager : NetworkBehaviour
     public PokemonData currentPokemon;
     [SerializeField]
     private TMP_InputField answerInput;
+    [SerializeField]
+    private TMP_Text roundQuestionText;
+    [SerializeField]
+    private TMP_Text dexNumberText;
     [SerializeField]
     private TMP_Text countDownText;
     [SerializeField]
@@ -74,6 +73,8 @@ public class GameManager : NetworkBehaviour
     private bool runCountDown = false;
     [SerializeField]
     private int pokeNameAnswerDiff = 2; // Set this to the desired Levenshtein distance for correct answer
+    [SerializeField]
+    private int dexNumberAnswerDiff = 15; // Set this to the desired distance for dex number answer
     [SerializeField]
     private float endRoundDuration = 3f; // Set this to the desired duration for the end round celebration
 
@@ -198,7 +199,7 @@ public class GameManager : NetworkBehaviour
                 SyncAllBingoCardsRpc();
                 //Check if someone has bingo after this (maybe do this in coroutine with second in between)
                 CheckWinnerRpc();
-                if(!GameHasWinner)
+                if (!GameHasWinner)
                     RandomizePokemonRpc();
             }
 
@@ -266,7 +267,7 @@ public class GameManager : NetworkBehaviour
                         existingClientID = idInfo.clientID;
                 }
                 var playerIDData = playerIDManager.CreatePlayerIDData();
-                SpawnPlayerRpc(iPlayer, playerObjects[iPlayer].GetComponent<PlayerObjectController>().playerNameText.text, 
+                SpawnPlayerRpc(iPlayer, playerObjects[iPlayer].GetComponent<PlayerObjectController>().playerNameText.text,
                     existingClientID, playerIDData);
             }
         }
@@ -324,15 +325,52 @@ public class GameManager : NetworkBehaviour
     /// </summary>
     private void CheckCorrectAnswer()
     {
-        string givenAnser = answerInput.text.ToLower();
-        string correctAnswer = currentPokemon.pokemonName.ToLower();
-        answerInput.text = currentPokemon.pokemonName; // Set the correct name in the inpt field to show the player
+        bool isCorrect = false;
+        string givenAnswer = answerInput.text.ToLower();
+        string correctAnswer = currentPokemon.pokemonName;
+        answerInput.text = correctAnswer; // Set the correct name in the input field to show the player
+        correctAnswer.ToLower();
 
         // Check if the given answer matches the correct answer with Levenshtein distance
-        int answerDifference = LevenshteinDistance.Calculate(givenAnser, correctAnswer);
+        int answerDifference = LevenshteinDistance.Calculate(givenAnswer, correctAnswer);
         Debug.Log("Answer difference: " + answerDifference);
 
-        if (answerDifference <= pokeNameAnswerDiff)
+        // Change check based on round
+        switch (currentRoundColor)
+        {
+            case BingoColors.Red: // Normal round
+                isCorrect = answerDifference <= pokeNameAnswerDiff; // Check if the answer is within the allowed distance
+                break;
+            case BingoColors.Green: // Blind round
+                isCorrect = answerDifference <= pokeNameAnswerDiff;
+                break;
+            case BingoColors.Blue: // Type round
+                string correctType1 = currentPokemon.pokemonTypes[0].ToLower();
+                string correctType2 = null;
+                if (currentPokemon.pokemonTypes.Length == 2)
+                    correctType2 = currentPokemon.pokemonTypes[1].ToLower();
+                answerInput.text = correctType1 + (currentPokemon.pokemonTypes.Length > 1 ? "/" + correctType2 : ""); // Set the correct types in the input field to show the player
+                correctType1.ToLower();
+                correctType2.ToLower();
+                string answerType1 = givenAnswer.Split('/')[0].ToLower();
+                string answerType2 = givenAnswer.Split('/').Length > 1 ? givenAnswer.Split('/')[1].ToLower() : null;
+                Debug.Log("Typed input types: " + answerType1 + "/" + answerType2);
+
+                // Check if the given types match the correct types
+                isCorrect = (answerType1 == correctType1 || answerType1 == correctType2) &&
+                        (answerType2 == correctType1 || answerType2 == correctType2);
+                break;
+            case BingoColors.Orange: // Dex round
+                int correctNumberAnswer = currentPokemon.pokemonID;
+                isCorrect = Mathf.Abs(int.Parse(givenAnswer) - correctNumberAnswer) <= dexNumberAnswerDiff;
+                answerInput.text = "#" + correctNumberAnswer.ToString(); // Set the correct dex number in the input field to show the player
+                break;
+            case BingoColors.Pink: // Cry round
+                isCorrect = answerDifference <= pokeNameAnswerDiff;
+                break;
+        }
+
+        if (isCorrect)
         {
             // Correct answer logic
             Debug.Log("Correct answer!");
@@ -346,6 +384,13 @@ public class GameManager : NetworkBehaviour
             roundCelebration.WrongCelebration();
             answerInput.image.color = Red; // Change caret color to red
             Debug.Log("Incorrect answer. Try again!");
+        }
+
+        // Show all the pokémon info on screen
+        for (int iChild = 0; iChild < pokemonScreen.transform.childCount; iChild++)
+        {
+            pokemonScreen.transform.GetChild(iChild).gameObject.SetActive(true);
+            pokemonImage.color = UnityEngine.Color.white; // Reset the pokemon image color to white
         }
         StartCoroutine(EndRound());
     }
@@ -398,7 +443,7 @@ public class GameManager : NetworkBehaviour
     {
         SentReadyStatusRpc(myBingoCard.bingoCardID);
         HasBingoClick = false; // Reset the bingo click status to lock the selected square
-        Debug.Log("authority: " + HasAuthority +", current owner: " + NetworkManager.CurrentSessionOwner +", player id count" + NetworkManager.ConnectedClientsIds.Count);
+        Debug.Log("authority: " + HasAuthority + ", current owner: " + NetworkManager.CurrentSessionOwner + ", player id count" + NetworkManager.ConnectedClientsIds.Count);
     }
 
     [Rpc(SendTo.Authority)]
@@ -442,6 +487,7 @@ public class GameManager : NetworkBehaviour
         countDownTimer = countDownTime; // Reset countdown time
         countDownText.text = countDownTime.ToString();
         answerInput.text = null; // Clear the input field
+        answerInput.placeholder.GetComponent<TMP_Text>().text = "Answer...";
         answerInput.image.color = UnityEngine.Color.white; // Reset caret color to white
         readyButton.enabled = false; // Deselect button
         readyButton.enabled = true;
@@ -451,7 +497,7 @@ public class GameManager : NetworkBehaviour
         myBingoCard.selectedSquareIndex = 999; // Reset selected square index
         roundColorIndicator.SetActive(false);
     }
-    
+
     private bool TestWinnerLine(BingoLine bingoLine, BingoCardManager bingoCard)
     {
         return TestWinnerLine(bingoCard.completionArray[bingoLine.sqauresInLine[0]], bingoCard.completionArray[bingoLine.sqauresInLine[1]],
@@ -467,7 +513,8 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     private void CheckWinnerRpc()
     {
-        foreach (BingoCardManager bingoCard in allBingoCards) {
+        foreach (BingoCardManager bingoCard in allBingoCards)
+        {
             foreach (BingoLine bingoLine in bingoLines)
             {
                 if (TestWinnerLine(bingoLine, bingoCard))
@@ -506,30 +553,7 @@ public class GameManager : NetworkBehaviour
 
         runCountDown = true; // Start the countdown timer
 
-        //fill images
-
-        // Fill Background color image for round color
-        switch (currentRoundColor)
-        {
-            case BingoColors.Red:
-                pokemonImageBackground.color = Red;
-                break;
-            case BingoColors.Green:
-                pokemonImageBackground.color = Green;
-                break;
-            case BingoColors.Blue:
-                pokemonImageBackground.color = Blue;
-                break;
-            case BingoColors.Orange:
-                pokemonImageBackground.color = Orange;
-                break;
-            case BingoColors.Pink:
-                pokemonImageBackground.color = Pink;
-                break;
-        }
-        UnityEngine.Color roundColor = pokemonImageBackground.color;
-        roundColor.a = 1; // Set alpha to 0.5 for transparency
-        pokemonImageBackground.color = roundColor;
+        // ==Fill images and data==
 
         // Fill Pokemon image and type images
         pokemonImage.texture = nextPokemon.pokemonSprite;
@@ -543,6 +567,10 @@ public class GameManager : NetworkBehaviour
             pokemonType2Image.SetNativeSize();
             pokemonType2Image.texture.filterMode = FilterMode.Trilinear;
         }
+
+        // Dex number and question text
+        dexNumberText.text = "#" + nextPokemon.pokemonID;
+        roundQuestionText.text = "What is the name of this Pokémon?";
 
         // Play Pokemon cry
         pokemonCry.clip = nextPokemon.pokemonCry;
@@ -558,5 +586,43 @@ public class GameManager : NetworkBehaviour
         {
             Debug.Log("Type: " + currentPokemon.pokemonTypes[0]);
         }
+
+        // Fill Background color image for round color and adjust screen based on round
+        switch (currentRoundColor)
+        {
+            case BingoColors.Red: // Normal round
+                pokemonImageBackground.color = Red;
+                break;
+            case BingoColors.Green: // Blind round
+                pokemonImageBackground.color = Green;
+                roundQuestionText.text = "Who's that Pokémon!?";
+                pokemonImage.color = UnityEngine.Color.black; // Make the image black shadow only
+                pokemonType1Image.gameObject.SetActive(false);
+                pokemonType2Image.gameObject.SetActive(false);
+                dexNumberText.gameObject.SetActive(false);
+                break;
+            case BingoColors.Blue: // Type round
+                pokemonImageBackground.color = Blue;
+                roundQuestionText.text = "What is the typing of this Pokémon?";
+                answerInput.placeholder.GetComponent<TMP_Text>().text = "Type 1/Type 2..."; // Set placeholder text for type input
+                pokemonType1Image.gameObject.SetActive(false);
+                pokemonType2Image.gameObject.SetActive(false);
+                break;
+            case BingoColors.Orange: // Dex round
+                pokemonImageBackground.color = Orange;
+                roundQuestionText.text = "What is this Pokémon's Pokédex number?";
+                answerInput.placeholder.GetComponent<TMP_Text>().text = "Numbers only..."; // Set placeholder text for type input
+                dexNumberText.gameObject.SetActive(false); // Hide the dex number text
+                break;
+            case BingoColors.Pink: // Cry round
+                pokemonImageBackground.color = Pink;
+                roundQuestionText.text = "What Pokémon makes this sound?";
+                pokemonImage.gameObject.SetActive(false); // Hide the pokemon image
+                dexNumberText.gameObject.SetActive(false);
+                break;
+        }
+        UnityEngine.Color roundColor = pokemonImageBackground.color;
+        roundColor.a = 1; // Set alpha to 0.5 for transparency
+        pokemonImageBackground.color = roundColor;
     }
 }
