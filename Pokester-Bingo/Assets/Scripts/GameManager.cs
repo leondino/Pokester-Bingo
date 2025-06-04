@@ -329,7 +329,7 @@ public class GameManager : NetworkBehaviour
         string givenAnswer = answerInput.text.ToLower();
         string correctAnswer = currentPokemon.pokemonName;
         answerInput.text = correctAnswer; // Set the correct name in the input field to show the player
-        correctAnswer.ToLower();
+        correctAnswer = correctAnswer.ToLower();
 
         // Check if the given answer matches the correct answer with Levenshtein distance
         int answerDifference = LevenshteinDistance.Calculate(givenAnswer, correctAnswer);
@@ -346,15 +346,16 @@ public class GameManager : NetworkBehaviour
                 break;
             case BingoColors.Blue: // Type round
                 string correctType1 = currentPokemon.pokemonTypes[0];
-                string correctType2 = "";
+                string correctType2 = null;
                 if (currentPokemon.pokemonTypes.Length == 2)
                     correctType2 = currentPokemon.pokemonTypes[1];
                 answerInput.text = correctType1 + (currentPokemon.pokemonTypes.Length > 1 ? "/" + correctType2 : ""); // Set the correct types in the input field to show the player
-                correctType1.ToLower();
-                correctType2.ToLower();
+                correctType1 = correctType1.ToLower();
+                if (correctType2 != null)
+                    correctType2 = correctType2.ToLower();
                 string answerType1 = givenAnswer.Split('/')[0].ToLower();
-                string answerType2 = givenAnswer.Split('/').Length > 1 ? givenAnswer.Split('/')[1].ToLower() : "";
-                Debug.Log("Typed input types: " + answerType1 + "/" + answerType2);
+                string answerType2 = givenAnswer.Split('/').Length > 1 ? givenAnswer.Split('/')[1].ToLower() : null;
+                Debug.Log("Typed input types: " + answerType1 + "/" + answerType2 + "\nReal Answer: " + correctType1 +"/" + correctType2);
 
                 // Check if the given types match the correct types
                 isCorrect = (answerType1 == correctType1 || answerType1 == correctType2) &&
@@ -362,7 +363,9 @@ public class GameManager : NetworkBehaviour
                 break;
             case BingoColors.Orange: // Dex round
                 int correctNumberAnswer = currentPokemon.pokemonID;
-                isCorrect = Mathf.Abs(int.Parse(givenAnswer) - correctNumberAnswer) <= dexNumberAnswerDiff;
+                int answerNumber = 0;
+                if (int.TryParse(givenAnswer, out answerNumber))
+                    isCorrect = Mathf.Abs(answerNumber - correctNumberAnswer) <= dexNumberAnswerDiff;
                 answerInput.text = "#" + correctNumberAnswer.ToString(); // Set the correct dex number in the input field to show the player
                 break;
             case BingoColors.Pink: // Cry round
