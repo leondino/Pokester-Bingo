@@ -345,15 +345,15 @@ public class GameManager : NetworkBehaviour
                 isCorrect = answerDifference <= pokeNameAnswerDiff;
                 break;
             case BingoColors.Blue: // Type round
-                string correctType1 = currentPokemon.pokemonTypes[0].ToLower();
-                string correctType2 = null;
+                string correctType1 = currentPokemon.pokemonTypes[0];
+                string correctType2 = "";
                 if (currentPokemon.pokemonTypes.Length == 2)
-                    correctType2 = currentPokemon.pokemonTypes[1].ToLower();
+                    correctType2 = currentPokemon.pokemonTypes[1];
                 answerInput.text = correctType1 + (currentPokemon.pokemonTypes.Length > 1 ? "/" + correctType2 : ""); // Set the correct types in the input field to show the player
                 correctType1.ToLower();
                 correctType2.ToLower();
                 string answerType1 = givenAnswer.Split('/')[0].ToLower();
-                string answerType2 = givenAnswer.Split('/').Length > 1 ? givenAnswer.Split('/')[1].ToLower() : null;
+                string answerType2 = givenAnswer.Split('/').Length > 1 ? givenAnswer.Split('/')[1].ToLower() : "";
                 Debug.Log("Typed input types: " + answerType1 + "/" + answerType2);
 
                 // Check if the given types match the correct types
@@ -375,14 +375,18 @@ public class GameManager : NetworkBehaviour
             // Correct answer logic
             Debug.Log("Correct answer!");
             roundCelebration.CorrectCelebration();
-            answerInput.image.color = Green; // Change caret color to green
+            Color correctColor = Green;
+            correctColor.a = 1;
+            answerInput.image.color = correctColor; // Change caret color to green
             HasBingoClick = true;
         }
         else
         {
             // Incorrect answer logic
             roundCelebration.WrongCelebration();
-            answerInput.image.color = Red; // Change caret color to red
+            Color incorrectColor = Red;
+            incorrectColor.a = 1;
+            answerInput.image.color = incorrectColor; // Change caret color to red
             Debug.Log("Incorrect answer. Try again!");
         }
 
