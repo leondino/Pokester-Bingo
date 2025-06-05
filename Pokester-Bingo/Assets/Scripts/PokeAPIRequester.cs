@@ -46,7 +46,8 @@ public class PokeAPIRequester : MonoBehaviour
             yield return pokeRequest.SendWebRequest();
             if (pokeRequest.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError("Error: " + pokeRequest.error);
+                Debug.LogError("Error: " + pokeRequest.error + "...Try again");
+                StartCoroutine(GetPokemonData(pokemonID));
                 yield break;
             }
 
@@ -70,7 +71,8 @@ public class PokeAPIRequester : MonoBehaviour
             yield return pokeSpriteRequest.SendWebRequest();
             if (pokeSpriteRequest.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError("Error: " + pokeSpriteRequest.error);
+                Debug.LogError("Error: " + pokeSpriteRequest.error + "...Try again");
+                StartCoroutine(GetPokemonData(pokemonID));
                 yield break;
             }
             else
@@ -87,7 +89,8 @@ public class PokeAPIRequester : MonoBehaviour
             yield return pokeCryRequest.SendWebRequest();
             if (pokeCryRequest.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError("Error: " + pokeCryRequest.error);
+                Debug.LogError("Error: " + pokeCryRequest.error + "...Try again");
+                StartCoroutine(GetPokemonData(pokemonID));
                 yield break;
             }
             else
@@ -108,7 +111,8 @@ public class PokeAPIRequester : MonoBehaviour
                 yield return typeRequest.SendWebRequest();
                 if (typeRequest.result != UnityWebRequest.Result.Success)
                 {
-                    Debug.LogError("Error: " + typeRequest.error);
+                    Debug.LogError("Error: " + typeRequest.error + "...Try again");
+                    StartCoroutine(GetPokemonData(pokemonID));
                     yield break;
                 }
 
@@ -123,7 +127,8 @@ public class PokeAPIRequester : MonoBehaviour
                     yield return typeSpriteRequest.SendWebRequest();
                     if (typeSpriteRequest.result != UnityWebRequest.Result.Success)
                     {
-                        Debug.LogError("Error: " + typeSpriteRequest.error);
+                        Debug.LogError("Error: " + typeSpriteRequest.error + "...Try again");
+                        StartCoroutine(GetPokemonData(pokemonID));
                         yield break;
                     }
                     else

@@ -89,7 +89,7 @@ public class GameManager : NetworkBehaviour
         playerObjects = playerSpawnLocationParent.Cast<Transform>().ToList();
         playersReady = new bool[playerObjects.Count];
 
-        pokemonCry = pokemonImage.GetComponent<AudioSource>();
+        pokemonCry = pokemonImageBackground.GetComponent<AudioSource>();
         pokeAPI = GetComponent<PokeAPIRequester>();
         ResetRound();
 
